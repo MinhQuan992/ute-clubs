@@ -15,9 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static hcmute.manage.club.uteclubs.framework.common.SecurityConstants.LOG_IN_URL;
-import static org.springframework.http.HttpMethod.*;
-import static org.springframework.http.HttpMethod.PUT;
+import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.LOG_IN_URL;
 
 @Configuration
 @EnableWebSecurity
@@ -42,6 +40,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/users/signup").permitAll()
                 .antMatchers("/users/signup/*").permitAll()
+                .antMatchers("/users/findAll").hasAuthority("ROLE_ADMIN")
                 .antMatchers("/users/find/*").hasAnyAuthority("ROLE_USER", "ROLE_LEADER", "ROLE_ADMIN")
                 .anyRequest().authenticated();
 

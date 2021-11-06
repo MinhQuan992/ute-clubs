@@ -1,4 +1,4 @@
 package hcmute.manage.club.uteclubs.exception;
 
-public class NoContentException extends Exception {
+public class NoContentException extends RuntimeException {
 }

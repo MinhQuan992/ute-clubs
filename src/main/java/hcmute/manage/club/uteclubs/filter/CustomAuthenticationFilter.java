@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static hcmute.manage.club.uteclubs.framework.common.SecurityConstants.EXPIRATION_TIME;
-import static hcmute.manage.club.uteclubs.framework.common.SecurityConstants.SECRET;
+import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.EXPIRATION_TIME;
+import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.SECRET;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RequiredArgsConstructor
