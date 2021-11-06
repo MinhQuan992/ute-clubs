@@ -32,27 +32,40 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({DateException.class, PasswordsDoNotMatchException.class, OtpException.class})
-    public String badRequestException(Exception exception) {
-        return exception.getMessage();
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ConflictWorkFlowException.class)
-    public String conflictWorkFlowException(Exception exception) {
-        return exception.getMessage();
-    }
-
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ExceptionHandler(NoContentException.class)
-    public String noContentException(Exception exception) {
+    public ResponseEntity<CustomException> noContentException() {
         return null;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({DateException.class, UnderageException.class, PasswordsDoNotMatchException.class,
+            OtpException.class, InvalidRequestException.class})
+    public ResponseEntity<CustomException> badRequestException(Exception exception) {
+        CustomException customException = new CustomException();
+        customException.setStatus(400);
+        customException.setError("Bad Request");
+        customException.setMessage(exception.getMessage());
+        return new ResponseEntity<>(customException, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
-    public String notFoundException(Exception exception) {
-        return exception.getMessage();
+    public ResponseEntity<CustomException> notFoundException(Exception exception) {
+        CustomException customException = new CustomException();
+        customException.setStatus(404);
+        customException.setError("Not Found");
+        customException.setMessage(exception.getMessage());
+        return new ResponseEntity<>(customException, HttpStatus.NOT_FOUND);
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<CustomException> resourceConflictException(Exception exception) {
+        CustomException customException = new CustomException();
+        customException.setStatus(409);
+        customException.setError("Resource Conflict");
+        customException.setMessage(exception.getMessage());
+        return new ResponseEntity<>(customException, HttpStatus.CONFLICT);
     }
 }

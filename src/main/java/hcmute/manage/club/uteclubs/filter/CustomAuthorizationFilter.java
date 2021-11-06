@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static hcmute.manage.club.uteclubs.framework.common.SecurityConstants.*;
+import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.*;
 import static java.util.Arrays.stream;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;

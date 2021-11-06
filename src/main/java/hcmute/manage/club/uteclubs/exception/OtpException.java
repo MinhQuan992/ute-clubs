@@ -1,6 +1,6 @@
 package hcmute.manage.club.uteclubs.exception;
 
-public class OtpException extends Exception{
+public class OtpException extends RuntimeException {
     public OtpException(String message) {
         super(message);
     }

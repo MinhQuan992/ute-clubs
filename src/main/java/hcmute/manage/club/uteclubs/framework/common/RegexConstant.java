@@ -1,7 +1,7 @@
 package hcmute.manage.club.uteclubs.framework.common;
 
 public class RegexConstant {
-    public static final String STUDENT_ID_PATTERN = "^[0-9]*$";
+    public static final String COMMON_ID_PATTERN = "^[0-9]*$";
     public static final String GENDER_PATTERN = "^male|female|$";
     public static final String USERNAME_PATTERN = "^[0-9A-Za-z]*$";
     public static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\w\\W]*$";

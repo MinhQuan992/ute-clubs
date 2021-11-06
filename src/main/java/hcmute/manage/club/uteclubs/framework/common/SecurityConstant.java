@@ -1,6 +1,6 @@
 package hcmute.manage.club.uteclubs.framework.common;
 
-public class SecurityConstants {
+public class SecurityConstant {
     public static final String SECRET = "SECRET_KEY";
     public static final long EXPIRATION_TIME = 900_000; // 15 minutes
     public static final String TOKEN_PREFIX = "Bearer ";

@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -19,7 +18,7 @@ public class UserSignUpWithoutOTPParams {
     private String fullName;
 
     @NotBlank(message = "The student id is required")
-    @Pattern(regexp = RegexConstant.STUDENT_ID_PATTERN, message = "The student id must contain only numeric characters")
+    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student id must contain only numeric characters")
     @Size(min = 8, max = 8, message = "The length of the student id must be 8 characters")
     private String studentId;
 

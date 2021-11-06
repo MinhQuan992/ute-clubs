@@ -3,6 +3,8 @@ package hcmute.manage.club.uteclubs.service;
 import hcmute.manage.club.uteclubs.exception.*;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithOTPParams;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithoutOTPParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserUpdateInfoParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserChangePasswordParams;
 import hcmute.manage.club.uteclubs.model.Mail;
 import hcmute.manage.club.uteclubs.model.Role;
 import hcmute.manage.club.uteclubs.model.User;
@@ -22,11 +24,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.*;
 import static hcmute.manage.club.uteclubs.utility.DateUtility.differenceInYear;
 
 @Service
@@ -52,8 +52,25 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(username, user.getPassword(), authorities);
     }
 
+    public List<User> getAllUsers() throws NoContentException {
+        List<User> result = userRepository.findAll();
+        if (result.isEmpty()) {
+            throw new NoContentException();
+        }
+        return result;
+    }
+
+    public User getUserById(String id) throws NotFoundException {
+        Long idInNumber = Long.parseLong(id);
+        Optional<User> user = userRepository.findById(idInNumber);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        return user.get();
+    }
+
     public User validateInfoAndGenerateOTP(UserSignUpWithoutOTPParams params)
-            throws ConflictWorkFlowException, DateException, PasswordsDoNotMatchException {
+            throws InvalidRequestException, DateException, PasswordsDoNotMatchException, UnderageException {
         String fullName = params.getFullName();
         String studentId = params.getStudentId();
         String gender = params.getGender();
@@ -66,7 +83,7 @@ public class UserService implements UserDetailsService {
         String email = params.getEmail();
 
         if (userRepository.existsByStudentId(studentId)) {
-            throw new ConflictWorkFlowException("This id is existing");
+            throw new ResourceConflictException(STUDENT_ID_IS_EXISTING);
         }
 
         Date dob;
@@ -75,24 +92,24 @@ public class UserService implements UserDetailsService {
         try {
             dob = simpleDateFormat.parse(dobInString);
         } catch (ParseException exception) {
-            throw new DateException("Wrong date format");
+            throw new DateException(WRONG_DATE_FORMAT);
         }
 
         long age = differenceInYear(dob);
         if (age <= 17) {
-            throw new DateException("You must be older than 17 years old");
+            throw new UnderageException(UNDERAGE);
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictWorkFlowException("This email is taken");
+            throw new ResourceConflictException("This email is taken");
         }
 
         if (userRepository.existsByUsername(username)) {
-            throw new ConflictWorkFlowException("This username is taken");
+            throw new ResourceConflictException("This username is taken");
         }
 
         if (!password.equals(confirmedPassword)) {
-            throw new PasswordsDoNotMatchException("These passwords do not match");
+            throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
         }
 
         int otp = otpService.generateOTP(username);
@@ -144,12 +161,92 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public User getUserById(Long id) throws NotFoundException {
-        Optional<User> user = userRepository.findById(id);
+    public User updateUserInfo(String userId, UserUpdateInfoParams params)
+            throws NotFoundException, InvalidRequestException, DateException, UnderageException {
+        //TODO: add some checks to make sure that only the owner of the account can change the account's info
+        Long idInNumber = Long.parseLong(userId);
+        Optional<User> user = userRepository.findById(idInNumber);
         if (user.isEmpty()) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException(USER_NOT_FOUND);
         }
-        return user.get();
+
+        String fullName = params.getFullName();
+        String studentId = params.getStudentId();
+        String gender = params.getGender();
+        String dobInString = params.getDob();
+        String faculty = params.getFaculty();
+        String major = params.getMajor();
+
+        User updatedUser = user.get();
+
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            updatedUser.setFullName(fullName);
+        }
+
+        if (studentId != null) {
+            if (userRepository.existsByStudentId(studentId)) {
+                throw new ResourceConflictException(STUDENT_ID_IS_EXISTING);
+            }
+            updatedUser.setStudentId(studentId);
+        }
+
+        if (gender != null && !gender.trim().isEmpty()) {
+            updatedUser.setGender(gender);
+        }
+
+        if (dobInString != null) {
+            Date dob;
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+            try {
+                dob = simpleDateFormat.parse(dobInString);
+            } catch (ParseException exception) {
+                throw new DateException(WRONG_DATE_FORMAT);
+            }
+
+            long age = differenceInYear(dob);
+            if (age <= 17) {
+                throw new UnderageException(UNDERAGE);
+            }
+
+            updatedUser.setDob(dob);
+        }
+
+        if (faculty != null && !faculty.trim().isEmpty()) {
+            updatedUser.setFaculty(faculty);
+        }
+
+        if (major != null && !major.trim().isEmpty()) {
+            updatedUser.setMajor(major);
+        }
+
+        return userRepository.save(updatedUser);
+    }
+
+    public User changePassword(String userId, UserChangePasswordParams params)
+            throws NotFoundException, InvalidRequestException, PasswordsDoNotMatchException {
+        //TODO: add some checks to make sure that only the owner of the account can change the account's password
+        Long idInNumber = Long.parseLong(userId);
+        Optional<User> user = userRepository.findById(idInNumber);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        User updatedUser = user.get();
+        String oldPassword, newPassword, confirmedPassword;
+        oldPassword = params.getOldPassword();
+        newPassword = params.getNewPassword();
+        confirmedPassword = params.getConfirmedPassword();
+
+        if (!passwordEncoder.matches(oldPassword, updatedUser.getPassword())) {
+            throw new InvalidRequestException("The old password is incorrect");
+        }
+
+        if (!newPassword.equals(confirmedPassword)) {
+            throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
+        }
+
+        updatedUser.setPassword(passwordEncoder.encode(newPassword));
+        return userRepository.save(updatedUser);
     }
 
     private void sendMail(String receiverName, String receiverMail, int otp) {
