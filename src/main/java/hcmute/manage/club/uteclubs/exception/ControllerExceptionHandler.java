@@ -49,6 +49,16 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(customException, HttpStatus.BAD_REQUEST);
     }
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(PermissionException.class)
+    public ResponseEntity<CustomException> permissionException(Exception exception) {
+        CustomException customException = new CustomException();
+        customException.setStatus(403);
+        customException.setError("Forbidden");
+        customException.setMessage(exception.getMessage());
+        return new ResponseEntity<>(customException, HttpStatus.FORBIDDEN);
+    }
+
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<CustomException> notFoundException(Exception exception) {

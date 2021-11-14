@@ -21,11 +21,6 @@ public class UserController implements UserAPI {
     private final UserService userService;
 
     @Override
-    public ResponseEntity<List<User>> getAllUsers() throws NoContentException {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
-    @Override
     public ResponseEntity<User> getUser(String userId) throws NotFoundException {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
