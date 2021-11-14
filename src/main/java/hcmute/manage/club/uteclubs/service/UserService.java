@@ -52,14 +52,6 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(username, user.getPassword(), authorities);
     }
 
-    public List<User> getAllUsers() throws NoContentException {
-        List<User> result = userRepository.findAll();
-        if (result.isEmpty()) {
-            throw new NoContentException();
-        }
-        return result;
-    }
-
     public User getUserById(String id) throws NotFoundException {
         Long idInNumber = Long.parseLong(id);
         Optional<User> user = userRepository.findById(idInNumber);

@@ -21,9 +21,6 @@ import static hcmute.manage.club.uteclubs.framework.common.RegexConstant.COMMON_
 @RequestMapping("/users")
 @Validated
 public interface UserAPI {
-    @GetMapping("/findAll")
-    ResponseEntity<List<User>> getAllUsers() throws NoContentException;
-
     @GetMapping("/find/{userId}")
     ResponseEntity<User> getUser(
             @PathVariable("userId")
@@ -39,7 +36,7 @@ public interface UserAPI {
     ResponseEntity<User> addNewUser(@Valid @RequestBody UserSignUpWithOTPParams params)
             throws OtpException, ParseException;
 
-    @PutMapping("/updateInfo/{userId}")
+    @PutMapping("/update-info/{userId}")
     ResponseEntity<User> updateUserInfo(
             @PathVariable("userId")
             @NotBlank(message = "The user ID is required")
@@ -48,7 +45,7 @@ public interface UserAPI {
             @Valid @RequestBody UserUpdateInfoParams params
     ) throws DateException, NotFoundException, InvalidRequestException, UnderageException;
 
-    @PutMapping("/changePassword/{userId}")
+    @PutMapping("/change-password/{userId}")
     ResponseEntity<User> changePassword(
             @PathVariable("userId")
             @NotBlank(message = "The user ID is required")
