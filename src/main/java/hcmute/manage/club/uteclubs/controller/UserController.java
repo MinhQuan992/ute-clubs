@@ -1,19 +1,17 @@
 package hcmute.manage.club.uteclubs.controller;
 
-import hcmute.manage.club.uteclubs.exception.*;
-import hcmute.manage.club.uteclubs.framework.UserAPI;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserChangePasswordParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithOTPParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithoutOTPParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserUpdateInfoParams;
-import hcmute.manage.club.uteclubs.model.User;
+import hcmute.manage.club.uteclubs.framework.api.UserAPI;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterOrCancelRequestParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
+import hcmute.manage.club.uteclubs.framework.dto.user.*;
 import hcmute.manage.club.uteclubs.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,31 +19,42 @@ public class UserController implements UserAPI {
     private final UserService userService;
 
     @Override
-    public ResponseEntity<User> getUser(String userId) throws NotFoundException {
-        return ResponseEntity.ok(userService.getUserById(userId));
+    public ResponseEntity<UserResponse> getUser(String userId) {
+        return ResponseEntity.ok(userService.getUserDTOById(userId));
     }
 
     @Override
-    public ResponseEntity<User> validateInfoAndGenerateOtp(UserSignUpWithoutOTPParams params)
-            throws PasswordsDoNotMatchException, InvalidRequestException, DateException, UnderageException {
-        return ResponseEntity.ok(userService.validateInfoAndGenerateOTP(params));
+    public ResponseEntity<UserResponse> validateInfoAndGenerateOtp(UserSignUpWithoutOTPParams params) {
+        return new ResponseEntity<>(userService.validateInfoAndGenerateOTP(params), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<User> addNewUser(UserSignUpWithOTPParams params)
-            throws OtpException, ParseException {
-        return ResponseEntity.ok(userService.addNewUser(params));
+    public ResponseEntity<UserResponse> addNewUser(UserSignUpWithOTPParams params) {
+        return new ResponseEntity<>(userService.addNewUser(params), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<User> updateUserInfo(String userId, UserUpdateInfoParams params)
-            throws DateException, NotFoundException, InvalidRequestException, UnderageException {
+    public ResponseEntity<UserResponse> updateUserInfo(String userId, UserUpdateInfoParams params) {
         return ResponseEntity.ok(userService.updateUserInfo(userId, params));
     }
 
     @Override
-    public ResponseEntity<User> changePassword(String userId, UserChangePasswordParams params)
-            throws PasswordsDoNotMatchException, NotFoundException, InvalidRequestException {
+    public ResponseEntity<UserResponse> changePassword(String userId, UserChangePasswordParams params) {
         return ResponseEntity.ok(userService.changePassword(userId, params));
+    }
+
+    @Override
+    public ResponseEntity<List<ClubResponse>> getJoinedClubs(String userId, Optional<Integer> page) {
+        return ResponseEntity.ok(userService.getJoinedClubs(userId));
+    }
+
+    @Override
+    public ResponseEntity<String> registerToClub(ClubRegisterOrCancelRequestParam param) {
+        return new ResponseEntity<>(userService.registerOrCancelRequest(param, true), HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<String> cancelRequest(ClubRegisterOrCancelRequestParam param) {
+        return ResponseEntity.ok(userService.registerOrCancelRequest(param, false));
     }
 }

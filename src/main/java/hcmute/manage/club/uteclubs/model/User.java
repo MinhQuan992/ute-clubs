@@ -1,10 +1,12 @@
 package hcmute.manage.club.uteclubs.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -12,13 +14,13 @@ import java.util.Date;
 @NoArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     @Column(length = 50, nullable = false)
     private String fullName;
 
-    @Column(length = 20, nullable = false, unique = true)
+    @Column(length = 8, nullable = false, unique = true)
     private String studentId;
 
     @Column(length = 6, nullable = false)
@@ -42,6 +44,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<Role> userRoles;
+    @Column(length = 10, nullable = false)
+    private String role;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<UserClub> participatedClubs;
 }

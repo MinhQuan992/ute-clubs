@@ -1,14 +1,17 @@
 package hcmute.manage.club.uteclubs.service;
 
 import hcmute.manage.club.uteclubs.exception.*;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithOTPParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithoutOTPParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserUpdateInfoParams;
-import hcmute.manage.club.uteclubs.framework.dto.user.UserChangePasswordParams;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterOrCancelRequestParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
+import hcmute.manage.club.uteclubs.framework.dto.user.*;
+import hcmute.manage.club.uteclubs.mapper.ClubMapper;
+import hcmute.manage.club.uteclubs.mapper.UserMapper;
+import hcmute.manage.club.uteclubs.model.Club;
 import hcmute.manage.club.uteclubs.model.Mail;
-import hcmute.manage.club.uteclubs.model.Role;
 import hcmute.manage.club.uteclubs.model.User;
-import hcmute.manage.club.uteclubs.repository.RoleRepository;
+import hcmute.manage.club.uteclubs.model.UserClub;
+import hcmute.manage.club.uteclubs.repository.ClubRepository;
+import hcmute.manage.club.uteclubs.repository.UserClubRepository;
 import hcmute.manage.club.uteclubs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,32 +42,28 @@ public class UserService implements UserDetailsService {
     private ApplicationContext context;
     private final OtpService otpService;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final ClubRepository clubRepository;
+    private final UserClubRepository userClubRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findUserByUsername(username);
-        if (user == null) {
+        Optional<User> userOptional = userRepository.findUserByUsername(username);
+        if (userOptional.isEmpty()) {
             throw new UsernameNotFoundException("User not found in the database");
         }
+        User user = userOptional.get();
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getUserRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getRoleName())));
+        authorities.add(new SimpleGrantedAuthority(user.getRole()));
         return new org.springframework.security.core.userdetails.User(username, user.getPassword(), authorities);
     }
 
-    public User getUserById(String id) throws NotFoundException {
-        Long idInNumber = Long.parseLong(id);
-        Optional<User> user = userRepository.findById(idInNumber);
-        if (user.isEmpty()) {
-            throw new NotFoundException(USER_NOT_FOUND);
-        }
-        validateUserPermission(user.get().getUsername());
-        return user.get();
+    public UserResponse getUserDTOById(String id) {
+        User user = getUserById(id);
+        return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
-    public User validateInfoAndGenerateOTP(UserSignUpWithoutOTPParams params)
-            throws InvalidRequestException, DateException, PasswordsDoNotMatchException, UnderageException {
+    public UserResponse validateInfoAndGenerateOTP(UserSignUpWithoutOTPParams params) {
         String fullName = params.getFullName();
         String studentId = params.getStudentId();
         String gender = params.getGender();
@@ -76,73 +75,54 @@ public class UserService implements UserDetailsService {
         String confirmedPassword = params.getConfirmedPassword();
         String email = params.getEmail();
 
-        if (userRepository.existsByStudentId(studentId)) {
-            throw new ResourceConflictException(STUDENT_ID_IS_EXISTING);
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new ResourceConflictException("This email is taken");
-        }
-        if (userRepository.existsByUsername(username)) {
-            throw new ResourceConflictException("This username is taken");
-        }
-        if (!password.equals(confirmedPassword)) {
-            throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
-        }
+        validateInfo(studentId, email, username, password, confirmedPassword);
 
         Date dob = parseDobFromStringToDate(dobInString);
         int otp = otpService.generateOTP(username);
         sendMail(fullName, email, otp);
         log.info("OTP is " + otp);
 
-        User user = new User();
-        user.setFullName(fullName);
-        user.setStudentId(studentId);
-        user.setGender(gender);
-        user.setDob(dob);
-        user.setFaculty(faculty);
-        user.setMajor(major);
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(password);
-
-        return user;
+        User createdUser = createUser(fullName, studentId, gender, faculty, major,
+                username, password, email, dob);
+        return UserMapper.INSTANCE.userToUserDTO(createdUser);
     }
 
-    public User addNewUser(UserSignUpWithOTPParams params) throws OtpException, ParseException {
+    public UserResponse addNewUser(UserSignUpWithOTPParams params) {
         int inputOtp = Integer.parseInt(params.getOtp());
         int serverOtp = otpService.getOtp(params.getUsername());
         if (serverOtp > 0) {
             if (inputOtp != serverOtp) {
                 throw new OtpException("This code is wrong. Please try again");
             }
+
+            String fullName = params.getFullName();
+            String studentId = params.getStudentId();
+            String gender = params.getGender();
+            String faculty = params.getFaculty();
+            String major = params.getMajor();
+            String dobInString = params.getDob();
+            String username = params.getUsername();
+            String password = params.getPassword();
+            String email = params.getEmail();
+
+            validateInfo(studentId, email, username);
+            Date dob = parseDobFromStringToDate(dobInString);
+
+            User user = createUser(fullName, studentId, gender, faculty, major,
+                    username, passwordEncoder.encode(password), email, dob);
+            user.setRole("ROLE_USER");
+            //user.setRole("ROLE_ADMIN");
             otpService.clearOTP(params.getUsername());
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            User user = new User();
 
-            user.setFullName(params.getFullName());
-            user.setStudentId(params.getStudentId());
-            user.setGender(params.getGender());
-            user.setDob(simpleDateFormat.parse(params.getDob()));
-            user.setFaculty(params.getFaculty());
-            user.setMajor(params.getMajor());
-            user.setEmail(params.getEmail());
-            user.setUsername(params.getUsername());
-            user.setPassword(passwordEncoder.encode(params.getPassword()));
-
-            Role defaultRole = roleRepository.findRoleByRoleName("ROLE_USER");
-            Collection<Role> roles = new ArrayList<>();
-            roles.add(defaultRole);
-            user.setUserRoles(roles);
-
-            return userRepository.save(user);
+            return UserMapper.INSTANCE.userToUserDTO(userRepository.save(user));
         } else {
             throw new OtpException("This code is expired. Please get a new code");
         }
     }
 
-    public User updateUserInfo(String userId, UserUpdateInfoParams params)
-            throws NotFoundException, InvalidRequestException, DateException, UnderageException {
+    public UserResponse updateUserInfo(String userId, UserUpdateInfoParams params) {
         User updatedUser = getUserById(userId);
+        validateUserPermission(updatedUser.getUsername());
 
         String fullName = params.getFullName();
         String gender = params.getGender();
@@ -154,12 +134,12 @@ public class UserService implements UserDetailsService {
         updatedUser.setGender(gender);
         updatedUser.setDob(dob);
 
-        return userRepository.save(updatedUser);
+        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(updatedUser));
     }
 
-    public User changePassword(String userId, UserChangePasswordParams params)
-            throws NotFoundException, InvalidRequestException, PasswordsDoNotMatchException {
+    public UserResponse changePassword(String userId, UserChangePasswordParams params) {
         User updatedUser = getUserById(userId);
+        validateUserPermission(updatedUser.getUsername());
 
         String oldPassword, newPassword, confirmedPassword;
         oldPassword = params.getOldPassword();
@@ -175,13 +155,101 @@ public class UserService implements UserDetailsService {
         }
 
         updatedUser.setPassword(passwordEncoder.encode(newPassword));
-        return userRepository.save(updatedUser);
+        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(updatedUser));
+    }
+
+    public List<ClubResponse> getJoinedClubs(String userId) {
+        Long idInNumber = Long.parseLong(userId);
+        Optional<User> userOptional = userRepository.findById(idInNumber);
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        User user = userOptional.get();
+        validateUserPermission(user.getUsername());
+        List<Club> results = userClubRepository.getJoinedClubs(user);
+        if (results.isEmpty()) {
+            throw new NoContentException();
+        }
+        return ClubMapper.INSTANCE.listClubToListClubDTO(results);
+    }
+
+    public String registerOrCancelRequest(ClubRegisterOrCancelRequestParam param, boolean isRegistering) {
+        String currentUsername = getCurrentUsername();
+        User user = userRepository.findUserByUsername(currentUsername).get();
+
+        String clubId = param.getClubId();
+        Optional<Club> clubOptional = clubRepository.findById(Long.parseLong(clubId));
+        if (clubOptional.isEmpty()) {
+            throw new NotFoundException(CLUB_NOT_FOUND);
+        }
+        Club club = clubOptional.get();
+
+        UserClub userClub;
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
+
+        if (isRegistering) {
+            if (userClubOptional.isPresent()) {
+                throw new InvalidRequestException("You have already registered to this club");
+            }
+
+            userClub = new UserClub(user, club, "ROLE_MEMBER", false);
+            userClubRepository.save(userClub);
+            return "You have successfully registered to this club";
+        }
+
+        if (userClubOptional.isEmpty()) {
+            throw new InvalidRequestException("You have not registered to this club");
+        }
+
+        userClub = userClubOptional.get();
+        if (userClub.isAccepted()) {
+            throw new InvalidRequestException("You have been accepted to be a member of this club");
+        }
+
+        userClubRepository.delete(userClub);
+        return "Your request has been cancelled successfully";
+    }
+
+    private User getUserById(String id) {
+        Long idInNumber = Long.parseLong(id);
+        Optional<User> user = userRepository.findById(idInNumber);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        return user.get();
     }
 
     private void validateUserPermission(String username) {
         String currentUsername = getCurrentUsername();
         if (!currentUsername.equals(username)) {
             throw new PermissionException("You are not allowed to do this action");
+        }
+    }
+
+    private void validateInfo(String studentId, String email, String username, String password, String confirmedPassword) {
+        if (userRepository.existsByStudentId(studentId)) {
+            throw new ResourceConflictException(STUDENT_ID_IS_EXISTING);
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new ResourceConflictException("This email is taken");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new ResourceConflictException("This username is taken");
+        }
+        if (!password.equals(confirmedPassword)) {
+            throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
+        }
+    }
+
+    private void validateInfo(String studentId, String email, String username) {
+        if (userRepository.existsByStudentId(studentId)) {
+            throw new ResourceConflictException(STUDENT_ID_IS_EXISTING);
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new ResourceConflictException("This email is taken");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new ResourceConflictException("This username is taken");
         }
     }
 
@@ -202,6 +270,23 @@ public class UserService implements UserDetailsService {
         return dob;
     }
 
+    private User createUser(String fullName, String studentId, String gender, String faculty,
+                            String major, String username, String password, String email, Date dob) {
+        User user = new User();
+
+        user.setFullName(fullName);
+        user.setStudentId(studentId);
+        user.setGender(gender);
+        user.setDob(dob);
+        user.setFaculty(faculty);
+        user.setMajor(major);
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPassword(password);
+
+        return user;
+    }
+
     private void sendMail(String receiverName, String receiverMail, int otp) {
         String content = "Dear " + receiverName + ",\n"
                 + "This is your verification code: " + otp;
@@ -213,11 +298,5 @@ public class UserService implements UserDetailsService {
 
         MailService mailService = (MailService) context.getBean("mailService");
         mailService.sendEmail(mail);
-    }
-
-    private void addRoleToUser(String username, String roleName) {
-        User user = userRepository.findUserByUsername(username);
-        Role role = roleRepository.findRoleByRoleName(roleName);
-        user.getUserRoles().add(role);
     }
 }
