@@ -28,9 +28,6 @@ public interface UserClubRepository extends JpaRepository<UserClub, UserClubId> 
     @Query("SELECT uc.user FROM UserClub uc WHERE uc.club = :club AND uc.accepted = true")
     Page<User> getMembers(@Param("club") Club club, Pageable pageable);
 
-    @Query("SELECT uc.user FROM UserClub uc WHERE uc.club = :club AND uc.accepted = true")
-    List<User> getAllMembers(@Param("club") Club club);
-
     @Query("SELECT uc.user FROM UserClub uc WHERE uc.club = :club AND uc.accepted = false")
     Page<User> getMemberRequests(@Param("club") Club club, Pageable pageable);
 }

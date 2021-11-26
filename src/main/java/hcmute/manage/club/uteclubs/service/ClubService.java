@@ -61,10 +61,10 @@ public class ClubService {
         return ClubMapper.INSTANCE.listClubToListClubDTO(userClubRepository.getManagedClubs(user));
     }
 
-    public ClubResponse getClubDTOById(String clubId, boolean isLeader) {
+    public ClubResponse getClubDTOById(String clubId, boolean isLeaderOrMod) {
         Club club = getClubById(clubId);
-        if (isLeader) {
-            validateLeaderPermission(club);
+        if (isLeaderOrMod) {
+            validateLeaderModPermissions(club);
         }
         return ClubMapper.INSTANCE.clubToClubDTO(club);
     }
@@ -92,10 +92,8 @@ public class ClubService {
         UserClub userClub;
         Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
         if (userClubOptional.isPresent()) {
-            List<User> clubMembers = userClubRepository.getAllMembers(club);
-            boolean isMember = clubMembers.stream().anyMatch(item -> item.equals(user));
-
-            if (isMember) {
+            userClub = userClubOptional.get();
+            if (userClub.isAccepted()) {
                 throw new InvalidRequestException("This user was already in this club");
             }
 
@@ -103,7 +101,6 @@ public class ClubService {
                 throw new InvalidRequestException("This club already had a LEADER");
             }
 
-            userClub = userClubOptional.get();
             userClub.setRoleInClub(role);
             userClub.setAccepted(true);
         } else {
@@ -130,7 +127,7 @@ public class ClubService {
 
     public Page<UserResponse> getMemberRequests(String clubId, Optional<Integer> page) {
         Club club = getClubById(clubId);
-        validateLeaderAndModPermissions(club);
+        validateLeaderModPermissions(club);
         Page<User> result = userClubRepository.getMemberRequests(club, PageRequest.of(page.orElse(0), 10));
         if (result.isEmpty()) {
             throw new NoContentException();
@@ -140,7 +137,7 @@ public class ClubService {
 
     public String acceptMember(String clubId, ClubAcceptOrRejectMemberParam param) {
         Club club = getClubById(clubId);
-        validateLeaderAndModPermissions(club);
+        validateLeaderModPermissions(club);
         User user = getUserByStudentId(param.getStudentId());
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
@@ -156,7 +153,7 @@ public class ClubService {
 
     public String rejectMember(String clubId, ClubAcceptOrRejectMemberParam param) {
         Club club = getClubById(clubId);
-        validateLeaderAndModPermissions(club);
+        validateLeaderModPermissions(club);
         User user = getUserByStudentId(param.getStudentId());
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
@@ -222,7 +219,7 @@ public class ClubService {
         }
     }
 
-    private void validateLeaderAndModPermissions(Club club) {
+    private void validateLeaderModPermissions(Club club) {
         String currentUsername = getCurrentUsername();
         User currentUser = userRepository.findUserByUsername(currentUsername).get();
         Optional<UserClub> userClub = userClubRepository.findUserClubByUserAndClub(currentUser, club);
