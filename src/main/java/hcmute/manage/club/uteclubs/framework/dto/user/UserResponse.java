@@ -15,4 +15,5 @@ public class UserResponse {
     private String major;
     private String email;
     private String username;
+    private String avatarUrl;
 }

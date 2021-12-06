@@ -13,9 +13,9 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClubAddPersonParams {
-    @NotBlank(message = "The student id is required")
-    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student id must contain only numeric characters")
-    @Size(min = 8, max = 8, message = "The length of the student id must be 8 characters")
+    @NotBlank(message = "The student ID is required")
+    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student ID must contain numeric characters only")
+    @Size(min = 8, max = 8, message = "The length of the student ID must be 8 characters")
     private String studentId;
 
     @NotBlank(message = "The role is required")

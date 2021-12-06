@@ -27,10 +27,16 @@ public class Club {
     @Type(type = "text")
     private String description;
 
+    @Column
+    private String logoUrl;
+
     @OneToMany(
             mappedBy = "club",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserClub> members;
+
+    @OneToMany(mappedBy = "club")
+    private List<Post> posts;
 }

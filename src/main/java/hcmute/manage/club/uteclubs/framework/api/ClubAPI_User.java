@@ -26,7 +26,7 @@ public interface ClubAPI_User {
     ResponseEntity<ClubResponse> getClubById(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId
     );
 
@@ -34,7 +34,7 @@ public interface ClubAPI_User {
     ResponseEntity<Page<UserResponse>> getMembers(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
             @RequestParam Optional<Integer> page
     );

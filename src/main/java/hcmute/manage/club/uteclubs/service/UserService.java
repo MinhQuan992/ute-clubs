@@ -1,7 +1,7 @@
 package hcmute.manage.club.uteclubs.service;
 
 import hcmute.manage.club.uteclubs.exception.*;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterOrCancelRequestParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.*;
 import hcmute.manage.club.uteclubs.mapper.ClubMapper;
@@ -74,6 +74,7 @@ public class UserService implements UserDetailsService {
         String password = params.getPassword();
         String confirmedPassword = params.getConfirmedPassword();
         String email = params.getEmail();
+        String avatarUrl = params.getAvatarUrl();
 
         validateInfo(studentId, email, username, password, confirmedPassword);
 
@@ -83,7 +84,7 @@ public class UserService implements UserDetailsService {
         log.info("OTP is " + otp);
 
         User createdUser = createUser(fullName, studentId, gender, faculty, major,
-                username, password, email, dob);
+                username, password, email, avatarUrl, dob);
         return UserMapper.INSTANCE.userToUserDTO(createdUser);
     }
 
@@ -104,12 +105,13 @@ public class UserService implements UserDetailsService {
             String username = params.getUsername();
             String password = params.getPassword();
             String email = params.getEmail();
+            String avatarUrl = params.getAvatarUrl();
 
             validateInfo(studentId, email, username);
             Date dob = parseDobFromStringToDate(dobInString);
 
             User user = createUser(fullName, studentId, gender, faculty, major,
-                    username, passwordEncoder.encode(password), email, dob);
+                    username, passwordEncoder.encode(password), email, avatarUrl, dob);
             user.setRole("ROLE_USER");
             //user.setRole("ROLE_ADMIN");
             otpService.clearOTP(params.getUsername());
@@ -120,33 +122,33 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public UserResponse updateUserInfo(String userId, UserUpdateInfoParams params) {
-        User updatedUser = getUserById(userId);
-        validateUserPermission(updatedUser.getUsername());
+    public UserResponse updateUserInfo(UserUpdateInfoParams params) {
+        User currentUser = getCurrentUser();
 
         String fullName = params.getFullName();
         String gender = params.getGender();
         String dobInString = params.getDob();
+        String avatarUrl = params.getAvatarUrl();
 
         Date dob = parseDobFromStringToDate(dobInString);
 
-        updatedUser.setFullName(fullName);
-        updatedUser.setGender(gender);
-        updatedUser.setDob(dob);
+        currentUser.setFullName(fullName);
+        currentUser.setGender(gender);
+        currentUser.setDob(dob);
+        currentUser.setAvatarUrl(avatarUrl);
 
-        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(updatedUser));
+        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(currentUser));
     }
 
-    public UserResponse changePassword(String userId, UserChangePasswordParams params) {
-        User updatedUser = getUserById(userId);
-        validateUserPermission(updatedUser.getUsername());
+    public UserResponse changePassword(UserChangePasswordParams params) {
+        User currentUser = getCurrentUser();
 
         String oldPassword, newPassword, confirmedPassword;
         oldPassword = params.getOldPassword();
         newPassword = params.getNewPassword();
         confirmedPassword = params.getConfirmedPassword();
 
-        if (!passwordEncoder.matches(oldPassword, updatedUser.getPassword())) {
+        if (!passwordEncoder.matches(oldPassword, currentUser.getPassword())) {
             throw new InvalidRequestException("The old password is incorrect");
         }
 
@@ -154,54 +156,61 @@ public class UserService implements UserDetailsService {
             throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
         }
 
-        updatedUser.setPassword(passwordEncoder.encode(newPassword));
-        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(updatedUser));
+        currentUser.setPassword(passwordEncoder.encode(newPassword));
+        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(currentUser));
     }
 
-    public List<ClubResponse> getJoinedClubs(String userId) {
-        Long idInNumber = Long.parseLong(userId);
-        Optional<User> userOptional = userRepository.findById(idInNumber);
-        if (userOptional.isEmpty()) {
-            throw new NotFoundException(USER_NOT_FOUND);
-        }
-        User user = userOptional.get();
-        validateUserPermission(user.getUsername());
-        List<Club> results = userClubRepository.getJoinedClubs(user);
+    public List<ClubResponse> getJoinedClubs() {
+        User currentUser = getCurrentUser();
+        List<Club> results = userClubRepository.getJoinedClubs(currentUser);
         if (results.isEmpty()) {
             throw new NoContentException();
         }
         return ClubMapper.INSTANCE.listClubToListClubDTO(results);
     }
 
-    public String registerOrCancelRequest(ClubRegisterOrCancelRequestParam param, boolean isRegistering) {
-        String currentUsername = getCurrentUsername();
-        User user = userRepository.findUserByUsername(currentUsername).get();
+    public List<ClubResponse> getNotJoinedClubs() {
+        List<Club> allClubs = clubRepository.findAll();
 
-        String clubId = param.getClubId();
-        Optional<Club> clubOptional = clubRepository.findById(Long.parseLong(clubId));
-        if (clubOptional.isEmpty()) {
-            throw new NotFoundException(CLUB_NOT_FOUND);
-        }
-        Club club = clubOptional.get();
+        User currentUser = getCurrentUser();
+        List<Club> joinedClubs = userClubRepository.getJoinedClubs(currentUser);
 
-        UserClub userClub;
-        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
-
-        if (isRegistering) {
-            if (userClubOptional.isPresent()) {
-                throw new InvalidRequestException("You have already registered to this club");
+        List<Club> results = new ArrayList<>();
+        allClubs.forEach(club -> {
+            if (!joinedClubs.contains(club)) {
+                results.add(club);
             }
+        });
+        if (results.isEmpty()) {
+            throw new NoContentException();
+        }
+        return ClubMapper.INSTANCE.listClubToListClubDTO(results);
+    }
 
-            userClub = new UserClub(user, club, "ROLE_MEMBER", false);
-            userClubRepository.save(userClub);
-            return "You have successfully registered to this club";
+    public String registerToClub(ClubRegisterParam param) {
+        User currentUser = getCurrentUser();
+        Club club = getClub(param.getClubId());
+
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(currentUser, club);
+        if (userClubOptional.isPresent()) {
+            throw new InvalidRequestException("You have already registered to this club");
         }
 
+        UserClub userClub = new UserClub(currentUser, club, "ROLE_MEMBER", false);
+        userClubRepository.save(userClub);
+        return "You have successfully registered to this club";
+    }
+
+    public String cancelRequest(String clubId) {
+        User currentUser = getCurrentUser();
+        Club club = getClub(clubId);
+
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(currentUser, club);
         if (userClubOptional.isEmpty()) {
             throw new InvalidRequestException("You have not registered to this club");
         }
 
-        userClub = userClubOptional.get();
+        UserClub userClub = userClubOptional.get();
         if (userClub.isAccepted()) {
             throw new InvalidRequestException("You have been accepted to be a member of this club");
         }
@@ -219,11 +228,17 @@ public class UserService implements UserDetailsService {
         return user.get();
     }
 
-    private void validateUserPermission(String username) {
+    private User getCurrentUser() {
         String currentUsername = getCurrentUsername();
-        if (!currentUsername.equals(username)) {
-            throw new PermissionException("You are not allowed to do this action");
+        return userRepository.findUserByUsername(currentUsername).get();
+    }
+
+    private Club getClub(String clubId) {
+        Optional<Club> clubOptional = clubRepository.findById(Long.parseLong(clubId));
+        if (clubOptional.isEmpty()) {
+            throw new NotFoundException(CLUB_NOT_FOUND);
         }
+        return clubOptional.get();
     }
 
     private void validateInfo(String studentId, String email, String username, String password, String confirmedPassword) {
@@ -270,8 +285,8 @@ public class UserService implements UserDetailsService {
         return dob;
     }
 
-    private User createUser(String fullName, String studentId, String gender, String faculty,
-                            String major, String username, String password, String email, Date dob) {
+    private User createUser(String fullName, String studentId, String gender, String faculty, String major,
+                            String username, String password, String email, String avatarUrl, Date dob) {
         User user = new User();
 
         user.setFullName(fullName);
@@ -283,6 +298,7 @@ public class UserService implements UserDetailsService {
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(password);
+        user.setAvatarUrl(avatarUrl);
 
         return user;
     }

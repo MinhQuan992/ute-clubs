@@ -1,6 +1,6 @@
 package hcmute.manage.club.uteclubs.framework.api;
 
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptOrRejectMemberParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptMemberParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
@@ -28,7 +28,7 @@ public interface ClubAPI_Leader {
     ResponseEntity<ClubResponse> getClubInfo(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId
     );
 
@@ -36,16 +36,16 @@ public interface ClubAPI_Leader {
     ResponseEntity<UserClubResponse> addMember(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
-            @RequestBody @Valid ClubAddPersonParams params
+            @Valid @RequestBody ClubAddPersonParams params
     );
 
     @GetMapping("/{clubId}/member-requests")
     ResponseEntity<Page<UserResponse>> getMemberRequests(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
             @RequestParam Optional<Integer> page
     );
@@ -54,17 +54,20 @@ public interface ClubAPI_Leader {
     ResponseEntity<String> acceptMember(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
-            @RequestBody @Valid ClubAcceptOrRejectMemberParam param
+            @Valid @RequestBody ClubAcceptMemberParam param
     );
 
-    @DeleteMapping("/{clubId}/member-requests")
+    @DeleteMapping("/{clubId}/member-requests/{userId}")
     ResponseEntity<String> rejectMember(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
-            @RequestBody @Valid ClubAcceptOrRejectMemberParam param
+            @PathVariable("userId")
+            @NotBlank(message = "The user ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID must contain numeric characters only")
+                    String userId
     );
 }

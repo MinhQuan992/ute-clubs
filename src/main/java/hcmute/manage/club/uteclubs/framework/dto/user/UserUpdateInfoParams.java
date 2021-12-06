@@ -24,4 +24,8 @@ public class UserUpdateInfoParams {
     @NotBlank(message = "The date of birth is required")
     @Pattern(regexp = RegexConstant.DATE_PATTERN, message = "The date must be in format YYYY-mm-dd and must be valid")
     private String dob;
+
+    @NotBlank(message = "The avatar URL is required")
+    @Pattern(regexp = RegexConstant.URL_PATTERN, message = "The avatar URL must be valid")
+    private String avatarUrl;
 }

@@ -1,6 +1,6 @@
 package hcmute.manage.club.uteclubs.framework.api;
 
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterOrCancelRequestParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.*;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +22,9 @@ public interface UserAPI {
     ResponseEntity<UserResponse> getUser(
             @PathVariable("userId")
             @NotBlank(message = "The user ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID contains numeric characters only")
-                    String userId);
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID must contain numeric characters only")
+                    String userId
+    );
 
     @PostMapping("/signup")
     ResponseEntity<UserResponse> validateInfoAndGenerateOtp(@Valid @RequestBody UserSignUpWithoutOTPParams params);
@@ -31,36 +32,26 @@ public interface UserAPI {
     @PostMapping("/signup/verify")
     ResponseEntity<UserResponse> addNewUser(@Valid @RequestBody UserSignUpWithOTPParams params);
 
-    @PutMapping("/{userId}/update-info")
-    ResponseEntity<UserResponse> updateUserInfo(
-            @PathVariable("userId")
-            @NotBlank(message = "The user ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID contains numeric characters only")
-                    String userId,
-            @Valid @RequestBody UserUpdateInfoParams params
-    );
+    @PutMapping("/update-info")
+    ResponseEntity<UserResponse> updateUserInfo(@Valid @RequestBody UserUpdateInfoParams params);
 
-    @PutMapping("/{userId}/change-password")
-    ResponseEntity<UserResponse> changePassword(
-            @PathVariable("userId")
-            @NotBlank(message = "The user ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID contains numeric characters only")
-                    String userId,
-            @Valid @RequestBody UserChangePasswordParams params
-    );
+    @PutMapping("/change-password")
+    ResponseEntity<UserResponse> changePassword(@Valid @RequestBody UserChangePasswordParams params);
 
-    @GetMapping("/{userId}/joined-clubs")
-    ResponseEntity<List<ClubResponse>> getJoinedClubs(
-            @PathVariable("userId")
-            @NotBlank(message = "The user ID is required")
-            @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID contains numeric characters only")
-                    String userId,
-            @RequestParam Optional<Integer> page
-    );
+    @GetMapping("/joined-clubs")
+    ResponseEntity<List<ClubResponse>> getJoinedClubs();
+
+    @GetMapping("/not-joined-clubs")
+    ResponseEntity<List<ClubResponse>> getNotJoinedClubs();
 
     @PostMapping("/register-to-club")
-    ResponseEntity<String> registerToClub(@RequestBody @Valid ClubRegisterOrCancelRequestParam param);
+    ResponseEntity<String> registerToClub(@Valid @RequestBody ClubRegisterParam param);
 
-    @DeleteMapping("/cancel-request")
-    ResponseEntity<String> cancelRequest(@RequestBody @Valid ClubRegisterOrCancelRequestParam param);
+    @DeleteMapping("/cancel-request/{clubId}")
+    ResponseEntity<String> cancelRequest(
+            @PathVariable("clubId")
+            @NotBlank(message = "The club ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                    String clubID
+    );
 }

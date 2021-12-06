@@ -47,10 +47,16 @@ public class User {
     @Column(length = 10, nullable = false)
     private String role;
 
+    @Column
+    private String avatarUrl;
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserClub> participatedClubs;
+
+    @OneToMany(mappedBy = "author")
+    private List<Post> posts;
 }

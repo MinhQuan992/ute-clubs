@@ -12,8 +12,8 @@ import static hcmute.manage.club.uteclubs.framework.common.RegexConstant.COMMON_
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClubRegisterOrCancelRequestParam {
+public class ClubRegisterParam {
     @NotBlank(message = "The club ID is required")
-    @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID contains numeric characters only")
+    @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
     private String clubId;
 }

@@ -4,7 +4,7 @@ import hcmute.manage.club.uteclubs.exception.InvalidRequestException;
 import hcmute.manage.club.uteclubs.exception.NoContentException;
 import hcmute.manage.club.uteclubs.exception.NotFoundException;
 import hcmute.manage.club.uteclubs.exception.PermissionException;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptOrRejectMemberParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptMemberParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
@@ -135,10 +135,10 @@ public class ClubService {
         return result.map(UserMapper.INSTANCE::userToUserDTO);
     }
 
-    public String acceptMember(String clubId, ClubAcceptOrRejectMemberParam param) {
+    public String acceptMember(String clubId, ClubAcceptMemberParam param) {
         Club club = getClubById(clubId);
         validateLeaderModPermissions(club);
-        User user = getUserByStudentId(param.getStudentId());
+        User user = getUserById(param.getUserId());
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
         if (userClub.isAccepted()) {
@@ -151,10 +151,10 @@ public class ClubService {
         return "This user has been accepted";
     }
 
-    public String rejectMember(String clubId, ClubAcceptOrRejectMemberParam param) {
+    public String rejectMember(String clubId, String userId) {
         Club club = getClubById(clubId);
         validateLeaderModPermissions(club);
-        User user = getUserByStudentId(param.getStudentId());
+        User user = getUserById(userId);
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
         if (userClub.isAccepted()) {
@@ -184,6 +184,14 @@ public class ClubService {
 
     private User getUserByStudentId(String studentId) {
         Optional<User> userOptional = userRepository.findUserByStudentId(studentId);
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        return userOptional.get();
+    }
+
+    private User getUserById(String userId) {
+        Optional<User> userOptional = userRepository.findById(Long.parseLong(userId));
         if (userOptional.isEmpty()) {
             throw new NotFoundException(USER_NOT_FOUND);
         }

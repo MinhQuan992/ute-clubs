@@ -17,9 +17,9 @@ public class UserSignUpWithoutOTPParams {
     @Size(max = 50, message = "The length of the full name must not be greater than 50 characters")
     private String fullName;
 
-    @NotBlank(message = "The student id is required")
-    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student id must contain only numeric characters")
-    @Size(min = 8, max = 8, message = "The length of the student id must be 8 characters")
+    @NotBlank(message = "The student ID is required")
+    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student ID must contain numeric characters only")
+    @Size(min = 8, max = 8, message = "The length of the student ID must be 8 characters")
     private String studentId;
 
     @NotBlank(message = "The gender is required")
@@ -55,4 +55,8 @@ public class UserSignUpWithoutOTPParams {
 
     @NotBlank(message = "The confirmed password is required")
     private String confirmedPassword;
+
+    @NotBlank(message = "The avatar URL is required")
+    @Pattern(regexp = RegexConstant.URL_PATTERN, message = "The avatar URL must be valid")
+    private String avatarUrl;
 }
