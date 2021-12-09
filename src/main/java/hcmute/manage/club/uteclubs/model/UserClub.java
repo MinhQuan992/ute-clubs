@@ -1,12 +1,14 @@
 package hcmute.manage.club.uteclubs.model;
 
 import hcmute.manage.club.uteclubs.model.composite_key.UserClubId;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class UserClub {
     @EmbeddedId
     private UserClubId id;

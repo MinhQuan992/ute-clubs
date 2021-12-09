@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -18,9 +17,9 @@ public class UserSignUpWithOTPParams {
     @Size(max = 50, message = "The length of the full name must not be greater than 50 characters")
     private String fullName;
 
-    @NotBlank(message = "The student id is required")
-    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student id must contain only numeric characters")
-    @Size(min = 8, max = 8, message = "The length of the student id must be 8 characters")
+    @NotBlank(message = "The student ID is required")
+    @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The student ID must contain numeric characters only")
+    @Size(min = 8, max = 8, message = "The length of the student ID must be 8 characters")
     private String studentId;
 
     @NotBlank(message = "The gender is required")
@@ -28,7 +27,7 @@ public class UserSignUpWithOTPParams {
     private String gender;
 
     @NotBlank(message = "The date of birth is required")
-    @Pattern(regexp = RegexConstant.DATE_PATTERN, message = "The date must be in format YYYY-mm-dd and must be valid")
+    @Pattern(regexp = RegexConstant.DATE_PATTERN, message = "The date must be in format yyyy-MM-dd and must be valid")
     private String dob;
 
     @NotBlank(message = "The faculty is required")
@@ -54,9 +53,12 @@ public class UserSignUpWithOTPParams {
     @Size(min = 8, max = 20, message = "The length of the password must be between 8 and 20 characters")
     private String password;
 
-    @NotNull(message = "The OTP is required")
-    @Pattern(regexp = RegexConstant.OTP_PATTERN,
-            message = "The OTP must contain only numeric characters")
+    @NotBlank(message = "The avatar URL is required")
+    @Pattern(regexp = RegexConstant.URL_PATTERN, message = "The avatar URL must be valid")
+    private String avatarUrl;
+
+    @NotBlank(message = "The OTP is required")
+    @Pattern(regexp = RegexConstant.OTP_PATTERN, message = "The OTP must contain numeric characters only")
     @Size(min = 6, max = 6, message = "The length of the OTP must be 6 characters")
     private String otp;
 }

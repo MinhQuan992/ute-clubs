@@ -4,7 +4,6 @@ import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.model.Club;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 

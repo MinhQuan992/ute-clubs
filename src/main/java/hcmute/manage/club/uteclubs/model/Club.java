@@ -1,15 +1,17 @@
 package hcmute.manage.club.uteclubs.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Club {
@@ -27,10 +29,16 @@ public class Club {
     @Type(type = "text")
     private String description;
 
+    @Column
+    private String logoUrl;
+
     @OneToMany(
             mappedBy = "club",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserClub> members;
+
+    @OneToMany(mappedBy = "club")
+    private List<Post> posts;
 }

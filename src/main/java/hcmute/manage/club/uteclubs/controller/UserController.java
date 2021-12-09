@@ -1,7 +1,7 @@
 package hcmute.manage.club.uteclubs.controller;
 
 import hcmute.manage.club.uteclubs.framework.api.UserAPI;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterOrCancelRequestParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.*;
 import hcmute.manage.club.uteclubs.service.UserService;
@@ -34,27 +34,32 @@ public class UserController implements UserAPI {
     }
 
     @Override
-    public ResponseEntity<UserResponse> updateUserInfo(String userId, UserUpdateInfoParams params) {
-        return ResponseEntity.ok(userService.updateUserInfo(userId, params));
+    public ResponseEntity<UserResponse> updateUserInfo(UserUpdateInfoParams params) {
+        return ResponseEntity.ok(userService.updateUserInfo(params));
     }
 
     @Override
-    public ResponseEntity<UserResponse> changePassword(String userId, UserChangePasswordParams params) {
-        return ResponseEntity.ok(userService.changePassword(userId, params));
+    public ResponseEntity<UserResponse> changePassword(UserChangePasswordParams params) {
+        return ResponseEntity.ok(userService.changePassword(params));
     }
 
     @Override
-    public ResponseEntity<List<ClubResponse>> getJoinedClubs(String userId, Optional<Integer> page) {
-        return ResponseEntity.ok(userService.getJoinedClubs(userId));
+    public ResponseEntity<List<ClubResponse>> getJoinedClubs() {
+        return ResponseEntity.ok(userService.getJoinedClubs());
     }
 
     @Override
-    public ResponseEntity<String> registerToClub(ClubRegisterOrCancelRequestParam param) {
-        return new ResponseEntity<>(userService.registerOrCancelRequest(param, true), HttpStatus.CREATED);
+    public ResponseEntity<List<ClubResponse>> getNotJoinedClubs() {
+        return ResponseEntity.ok(userService.getNotJoinedClubs());
     }
 
     @Override
-    public ResponseEntity<String> cancelRequest(ClubRegisterOrCancelRequestParam param) {
-        return ResponseEntity.ok(userService.registerOrCancelRequest(param, false));
+    public ResponseEntity<String> registerToClub(ClubRegisterParam param) {
+        return new ResponseEntity<>(userService.registerToClub(param), HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<String> cancelRequest(String clubId) {
+        return ResponseEntity.ok(userService.cancelRequest(clubId));
     }
 }

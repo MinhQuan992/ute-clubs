@@ -8,4 +8,5 @@ public class ClubResponse {
     private String clubName;
     private String affiliatedUnit;
     private String description;
+    private String logoUrl;
 }

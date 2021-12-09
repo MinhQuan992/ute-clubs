@@ -1,15 +1,13 @@
 package hcmute.manage.club.uteclubs.controller;
 
 import hcmute.manage.club.uteclubs.framework.api.ClubAPI_Leader;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptOrRejectMemberParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptMemberParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
-import hcmute.manage.club.uteclubs.framework.dto.user_club.UserClubResponse;
 import hcmute.manage.club.uteclubs.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +30,8 @@ public class ClubControllerLeader implements ClubAPI_Leader {
     }
 
     @Override
-    public ResponseEntity<UserClubResponse> addMember(String clubId, ClubAddPersonParams params) {
-        return new ResponseEntity<>(clubService.addPersonToClub(clubId, params, false), HttpStatus.CREATED);
+    public ResponseEntity<String> addMember(String clubId, ClubAddPersonParams params) {
+        return ResponseEntity.ok(clubService.addPersonToClub(clubId, params, false));
     }
 
     @Override
@@ -42,12 +40,12 @@ public class ClubControllerLeader implements ClubAPI_Leader {
     }
 
     @Override
-    public ResponseEntity<String> acceptMember(String clubId, ClubAcceptOrRejectMemberParam param) {
+    public ResponseEntity<String> acceptMember(String clubId, ClubAcceptMemberParam param) {
         return ResponseEntity.ok(clubService.acceptMember(clubId, param));
     }
 
     @Override
-    public ResponseEntity<String> rejectMember(String clubId, ClubAcceptOrRejectMemberParam param) {
-        return ResponseEntity.ok(clubService.rejectMember(clubId, param));
+    public ResponseEntity<String> rejectMember(String clubId, String userId) {
+        return ResponseEntity.ok(clubService.rejectMember(clubId, userId));
     }
 }

@@ -4,14 +4,12 @@ import hcmute.manage.club.uteclubs.exception.InvalidRequestException;
 import hcmute.manage.club.uteclubs.exception.NoContentException;
 import hcmute.manage.club.uteclubs.exception.NotFoundException;
 import hcmute.manage.club.uteclubs.exception.PermissionException;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptOrRejectMemberParam;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptMemberParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
-import hcmute.manage.club.uteclubs.framework.dto.user_club.UserClubResponse;
 import hcmute.manage.club.uteclubs.mapper.ClubMapper;
-import hcmute.manage.club.uteclubs.mapper.UserClubMapper;
 import hcmute.manage.club.uteclubs.mapper.UserMapper;
 import hcmute.manage.club.uteclubs.model.Club;
 import hcmute.manage.club.uteclubs.model.Mail;
@@ -74,10 +72,11 @@ public class ClubService {
         club.setClubName(params.getClubName());
         club.setAffiliatedUnit(params.getAffiliatedUnit());
         club.setDescription(params.getDescription());
+        club.setLogoUrl(params.getLogoUrl());
         return ClubMapper.INSTANCE.clubToClubDTO(clubRepository.save(club));
     }
 
-    public UserClubResponse addPersonToClub(String clubId, ClubAddPersonParams params, boolean isAdmin) {
+    public String addPersonToClub(String clubId, ClubAddPersonParams params, boolean isAdmin) {
         Club club = getClubById(clubId);
         String role = params.getRoleInClub();
 
@@ -111,18 +110,18 @@ public class ClubService {
             userClub = new UserClub(user, club, role, true);
         }
 
-        UserClub result = userClubRepository.save(userClub);
+        userClubRepository.save(userClub);
         sendMail(user.getFullName(), user.getEmail(), club.getClubName(), role);
-        return UserClubMapper.INSTANCE.userClubToUserClubDTO(result);
+        return "This user has been added successfully";
     }
 
-    public Page<UserResponse> getMembers(String clubId, Optional<Integer> page) {
+    public List<UserResponse> getMembersByRole(String clubId, String role) {
         Club club = getClubById(clubId);
-        Page<User> result = userClubRepository.getMembers(club, PageRequest.of(page.orElse(0), 10));
+        List<User> result = userClubRepository.getMembersUsingRole(club, role);
         if (result.isEmpty()) {
             throw new NoContentException();
         }
-        return result.map(UserMapper.INSTANCE::userToUserDTO);
+        return UserMapper.INSTANCE.listUserToListUserDTO(result);
     }
 
     public Page<UserResponse> getMemberRequests(String clubId, Optional<Integer> page) {
@@ -135,10 +134,10 @@ public class ClubService {
         return result.map(UserMapper.INSTANCE::userToUserDTO);
     }
 
-    public String acceptMember(String clubId, ClubAcceptOrRejectMemberParam param) {
+    public String acceptMember(String clubId, ClubAcceptMemberParam param) {
         Club club = getClubById(clubId);
         validateLeaderModPermissions(club);
-        User user = getUserByStudentId(param.getStudentId());
+        User user = getUserById(param.getUserId());
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
         if (userClub.isAccepted()) {
@@ -151,10 +150,10 @@ public class ClubService {
         return "This user has been accepted";
     }
 
-    public String rejectMember(String clubId, ClubAcceptOrRejectMemberParam param) {
+    public String rejectMember(String clubId, String userId) {
         Club club = getClubById(clubId);
         validateLeaderModPermissions(club);
-        User user = getUserByStudentId(param.getStudentId());
+        User user = getUserById(userId);
         UserClub userClub = getUserClubByUserAndClub(user, club);
 
         if (userClub.isAccepted()) {
@@ -170,6 +169,7 @@ public class ClubService {
         club.setClubName(params.getClubName());
         club.setAffiliatedUnit(params.getAffiliatedUnit());
         club.setDescription(params.getDescription());
+        club.setLogoUrl(params.getLogoUrl());
         return ClubMapper.INSTANCE.clubToClubDTO(clubRepository.save(club));
     }
 
@@ -184,6 +184,14 @@ public class ClubService {
 
     private User getUserByStudentId(String studentId) {
         Optional<User> userOptional = userRepository.findUserByStudentId(studentId);
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+        return userOptional.get();
+    }
+
+    private User getUserById(String userId) {
+        Optional<User> userOptional = userRepository.findById(Long.parseLong(userId));
         if (userOptional.isEmpty()) {
             throw new NotFoundException(USER_NOT_FOUND);
         }

@@ -1,15 +1,17 @@
 package hcmute.manage.club.uteclubs.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -47,10 +49,16 @@ public class User {
     @Column(length = 10, nullable = false)
     private String role;
 
+    @Column
+    private String avatarUrl;
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private List<UserClub> participatedClubs;
+
+    @OneToMany(mappedBy = "author")
+    private List<Post> posts;
 }
