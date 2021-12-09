@@ -3,6 +3,7 @@ package hcmute.manage.club.uteclubs.repository;
 import hcmute.manage.club.uteclubs.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -11,6 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByStudentId(String studentId);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
-    Optional<User> findTopByUsernameContainingIgnoreCase(String username);
-    Optional<User> findTopByFullNameContainingIgnoreCase(String fullName);
+    List<User> findUsersByUsernameContainingIgnoreCase(String username);
+    List<User> findUsersByFullNameContainingIgnoreCase(String fullName);
 }

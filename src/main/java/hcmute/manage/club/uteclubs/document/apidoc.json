@@ -877,7 +877,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserClubResponse"
+                  "type": "string"
                 }
               }
             }
@@ -1127,7 +1127,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserClubResponse"
+                  "type": "string"
                 }
               }
             }
@@ -1663,7 +1663,7 @@
         "tags": [
           "club-controller-user"
         ],
-        "operationId": "getMembers",
+        "operationId": "getMembersByRole",
         "parameters": [
           {
             "name": "clubId",
@@ -1675,12 +1675,12 @@
             }
           },
           {
-            "name": "page",
+            "name": "role",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "pattern": "^ROLE_LEADER|ROLE_MODERATOR|ROLE_MEMBER|$",
+              "type": "string"
             }
           }
         ],
@@ -1690,7 +1690,10 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageUserResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponse"
+                  }
                 }
               }
             }
@@ -2276,7 +2279,7 @@
             "type": "string"
           },
           "avatarUrl": {
-            "pattern": "^\\\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$",
+            "pattern": "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
             "type": "string"
           }
         }
@@ -2374,7 +2377,7 @@
             "type": "string"
           },
           "logoUrl": {
-            "pattern": "^\\\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$",
+            "pattern": "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
             "type": "string"
           }
         }
@@ -2463,7 +2466,7 @@
             "type": "string"
           },
           "avatarUrl": {
-            "pattern": "^\\\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$",
+            "pattern": "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
             "type": "string"
           }
         }
@@ -2528,7 +2531,7 @@
             "type": "string"
           },
           "avatarUrl": {
-            "pattern": "^\\\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$",
+            "pattern": "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
             "type": "string"
           },
           "otp": {
@@ -2568,7 +2571,7 @@
             "type": "string"
           },
           "imageUrl": {
-            "pattern": "^\\\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]$",
+            "pattern": "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
             "type": "string"
           }
         }
@@ -2642,23 +2645,6 @@
           }
         }
       },
-      "UserClubId": {
-        "type": "object"
-      },
-      "UserClubResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/UserClubId"
-          },
-          "roleInClub": {
-            "type": "string"
-          },
-          "accepted": {
-            "type": "boolean"
-          }
-        }
-      },
       "PageClubResponse": {
         "type": "object",
         "properties": {
@@ -2687,6 +2673,9 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageable"
+          },
           "first": {
             "type": "boolean"
           },
@@ -2696,9 +2685,6 @@
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/Pageable"
           },
           "empty": {
             "type": "boolean"
@@ -2715,11 +2701,11 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
-          "pageNumber": {
+          "pageSize": {
             "type": "integer",
             "format": "int32"
           },
-          "pageSize": {
+          "pageNumber": {
             "type": "integer",
             "format": "int32"
           },
@@ -2773,6 +2759,9 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageable"
+          },
           "first": {
             "type": "boolean"
           },
@@ -2782,9 +2771,6 @@
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/Pageable"
           },
           "empty": {
             "type": "boolean"

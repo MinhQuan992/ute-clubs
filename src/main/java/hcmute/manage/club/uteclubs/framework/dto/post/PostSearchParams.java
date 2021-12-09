@@ -21,6 +21,6 @@ public class PostSearchParams {
     private String searchQuery;
 
     @Pattern(regexp = RegexConstant.DATE_WITH_PREFIX_PATTERN,
-            message = "The date query must be in format <prefix>YYYY-mm-dd and must be valid. The prefix must be one of these prefixes: lt, eq, gt")
+            message = "The date query must be in format <prefix>yyyy-MM-dd and must be valid. The prefix must be one of these prefixes: lt, eq, gt")
     private String dateQuery;
 }

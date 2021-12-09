@@ -3,7 +3,6 @@ package hcmute.manage.club.uteclubs.framework.api;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
-import hcmute.manage.club.uteclubs.framework.dto.user_club.UserClubResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +33,7 @@ public interface ClubAPI_Admin {
     ResponseEntity<ClubResponse> addNewClub(@Valid @RequestBody ClubAddOrUpdateInfoParams params);
 
     @PostMapping("/{clubId}/add-person")
-    ResponseEntity<UserClubResponse> addPersonToClub(
+    ResponseEntity<String> addPersonToClub(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
             @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")

@@ -25,8 +25,10 @@ public interface UserClubRepository extends JpaRepository<UserClub, UserClubId> 
     @Query("SELECT uc.club FROM UserClub uc WHERE uc.user = :user AND uc.roleInClub <> 'ROLE_MEMBER'")
     List<Club> getManagedClubs(@Param("user") User user);
 
-    @Query("SELECT uc.user FROM UserClub uc WHERE uc.club = :club AND uc.accepted = true")
-    Page<User> getMembers(@Param("club") Club club, Pageable pageable);
+    @Query("SELECT uc.user FROM UserClub uc " +
+            "WHERE uc.club = :club AND uc.roleInClub = :role AND uc.accepted = true " +
+            "ORDER BY uc.user.studentId ASC")
+    List<User> getMembersUsingRole(@Param("club") Club club, @Param("role") String role);
 
     @Query("SELECT uc.user FROM UserClub uc WHERE uc.club = :club AND uc.accepted = false")
     Page<User> getMemberRequests(@Param("club") Club club, Pageable pageable);

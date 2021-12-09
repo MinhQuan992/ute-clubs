@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -27,7 +28,7 @@ public class ClubControllerUser implements ClubAPI_User {
     }
 
     @Override
-    public ResponseEntity<Page<UserResponse>> getMembers(String clubId, Optional<Integer> page) {
-        return ResponseEntity.ok(clubService.getMembers(clubId, page));
+    public ResponseEntity<List<UserResponse>> getMembersByRole(String clubId, String role) {
+        return ResponseEntity.ok(clubService.getMembersByRole(clubId, role));
     }
 }

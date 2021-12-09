@@ -30,7 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.*;
-import static hcmute.manage.club.uteclubs.utility.DateUtility.differenceInYear;
+import static hcmute.manage.club.uteclubs.utility.DateUtilities.differenceInYear;
 import static hcmute.manage.club.uteclubs.utility.UserUtility.getCurrentUsername;
 
 @Service

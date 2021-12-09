@@ -4,7 +4,6 @@ import hcmute.manage.club.uteclubs.framework.api.ClubAPI_Admin;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
-import hcmute.manage.club.uteclubs.framework.dto.user_club.UserClubResponse;
 import hcmute.manage.club.uteclubs.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,8 +34,8 @@ public class ClubControllerAdmin implements ClubAPI_Admin {
     }
 
     @Override
-    public ResponseEntity<UserClubResponse> addPersonToClub(String clubId, ClubAddPersonParams params) {
-        return new ResponseEntity<>(clubService.addPersonToClub(clubId, params, true), HttpStatus.CREATED);
+    public ResponseEntity<String> addPersonToClub(String clubId, ClubAddPersonParams params) {
+        return ResponseEntity.ok(clubService.addPersonToClub(clubId, params, true));
     }
 
     @Override

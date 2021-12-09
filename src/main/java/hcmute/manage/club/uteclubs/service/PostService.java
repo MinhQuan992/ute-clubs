@@ -23,11 +23,11 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.*;
+import static hcmute.manage.club.uteclubs.utility.DateUtilities.convertToUTC;
 import static hcmute.manage.club.uteclubs.utility.UserUtility.getCurrentUsername;
 
 @Service
@@ -96,16 +96,10 @@ public class PostService {
 
         String searchQuery = params.getSearchQuery();
         if (!StringUtils.isEmpty(searchQuery)) {
-            Optional<User> userOptional = userRepository.findTopByUsernameContainingIgnoreCase(searchQuery);
-            if (userOptional.isEmpty()) {
-                userOptional = userRepository.findTopByFullNameContainingIgnoreCase(searchQuery);
-                if (userOptional.isEmpty()) {
-                    throw new NoContentException();
-                }
+            postListOne = postRepository.getPostsByClubAndAuthorUsername(club, searchQuery);
+            if (postListOne.isEmpty()) {
+                postListOne = postRepository.getPostByClubAndAuthorFullName(club, searchQuery);
             }
-            postListOne = postRepository.findPostsByClubAndAuthor(club, userOptional.get());
-            log.info("Post list one:");
-            postListOne.forEach(post -> log.info("{}", post.getPostId()));
         }
 
         String dateQuery = params.getDateQuery();
@@ -114,30 +108,29 @@ public class PostService {
             String dateInString = dateQuery.substring(2);
 
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = simpleDateFormat.parse(dateInString);
+            Date localDate = simpleDateFormat.parse(dateInString);
+            Date utcDate = convertToUTC(localDate);
 
             switch (prefix) {
-                case "lt" -> postListTwo = postRepository.findPostsByClubAndCreatedDateBefore(club, date);
+                case "lt" -> postListTwo = postRepository.findPostsByClubAndCreatedDateBefore(club, utcDate);
                 case "gt" -> {
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
+                    calendar.setTime(utcDate);
                     calendar.add(Calendar.DATE, 1);
-                    date = calendar.getTime();
-                    postListTwo = postRepository.findPostsByClubAndCreatedDateAfter(club, date);
+                    utcDate = calendar.getTime();
+                    postListTwo = postRepository.findPostsByClubAndCreatedDateAfter(club, utcDate);
                 }
                 default -> {
-                    postListTwo = postRepository.findPostsByClubAndCreatedDateAfter(club, date);
+                    postListTwo = postRepository.findPostsByClubAndCreatedDateAfter(club, utcDate);
                     Date newDate;
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
+                    calendar.setTime(utcDate);
                     calendar.add(Calendar.DATE, 1);
                     newDate = calendar.getTime();
                     List<Post> postsAfterNewDate = postRepository.findPostsByClubAndCreatedDateAfter(club, newDate);
                     postListTwo.removeAll(postsAfterNewDate);
                 }
             }
-            log.info("Post list two:");
-            postListTwo.forEach(post -> log.info("{}", post.getPostId()));
         }
 
         if (postListOne.isEmpty() && postListTwo.isEmpty()) {

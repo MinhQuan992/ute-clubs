@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 import java.util.Optional;
 
 import static hcmute.manage.club.uteclubs.framework.common.RegexConstant.COMMON_ID_PATTERN;
+import static hcmute.manage.club.uteclubs.framework.common.RegexConstant.ROLE_IN_CLUB_PATTERN;
 
 @RequestMapping("/clubs")
 @Validated
@@ -31,11 +33,12 @@ public interface ClubAPI_User {
     );
 
     @GetMapping("/{clubId}/members")
-    ResponseEntity<Page<UserResponse>> getMembers(
+    ResponseEntity<List<UserResponse>> getMembersByRole(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
             @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
-            @RequestParam Optional<Integer> page
+            @Pattern(regexp = ROLE_IN_CLUB_PATTERN, message = "The role must be ROLE_LEADER, ROLE_MODERATOR or ROLE_MEMBER")
+            @RequestParam String role
     );
 }
