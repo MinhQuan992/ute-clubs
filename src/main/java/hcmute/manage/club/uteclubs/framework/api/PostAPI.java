@@ -18,7 +18,7 @@ import java.util.List;
 @Validated
 public interface PostAPI {
     @GetMapping("/get-by-club/{clubId}")
-    ResponseEntity<List<PostResponse>> getAllByClubs(
+    ResponseEntity<List<PostResponse>> getAllByClub(
             @PathVariable("clubId")
             @NotBlank(message = "The club ID is required")
             @Pattern(regexp = RegexConstant.COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")

@@ -1,7 +1,7 @@
 package hcmute.manage.club.uteclubs.mapper;
 
-import hcmute.manage.club.uteclubs.framework.dto.post.PostResponse;
-import hcmute.manage.club.uteclubs.model.Post;
+import hcmute.manage.club.uteclubs.framework.dto.comment.CommentResponse;
+import hcmute.manage.club.uteclubs.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -10,16 +10,16 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 @Mapper
-public interface PostMapper {
-    PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
+public interface CommentMapper {
+    CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 
     @Mappings({
             @Mapping(target = "authorUsername", source = "author.username"),
             @Mapping(target = "authorFullName", source = "author.fullName"),
             @Mapping(target = "authorAvtUrl", source = "author.avatarUrl"),
-            @Mapping(target = "clubId", source = "club.clubId")
+            @Mapping(target = "postId", source = "post.postId")
     })
-    PostResponse postToPostDTO(Post post);
+    CommentResponse commentToCommentDTO(Comment comment);
 
-    List<PostResponse> listPostToListPostDTO(List<Post> posts);
+    List<CommentResponse> listCommentToListCommentDTO(List<Comment> comments);
 }

@@ -8,5 +8,6 @@ public class ExceptionMessageConstant {
     public static final String USER_NOT_FOUND = "User not found";
     public static final String CLUB_NOT_FOUND = "Club not found";
     public static final String POST_NOT_FOUND = "Post not found";
+    public static final String COMMENT_NOT_FOUND = "Comment not found";
     public static final String NOT_MEMBER = "You are not a member of this club";
 }
