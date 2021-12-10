@@ -844,6 +844,86 @@
         }
       }
     },
+    "/comments": {
+      "post": {
+        "tags": [
+          "comment-controller"
+        ],
+        "operationId": "createComment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/club-management/{clubId}/add-members": {
       "post": {
         "tags": [
@@ -1417,7 +1497,7 @@
         "tags": [
           "post-controller"
         ],
-        "operationId": "getAllByClubs",
+        "operationId": "getAllByClub",
         "parameters": [
           {
             "name": "clubId",
@@ -1438,6 +1518,90 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/PostResponse"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comments/get-by-post/{postId}": {
+      "get": {
+        "tags": [
+          "comment-controller"
+        ],
+        "operationId": "getAllByPost",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentResponse"
                   }
                 }
               }
@@ -2148,6 +2312,87 @@
         }
       }
     },
+    "/comments/{commentId}": {
+      "delete": {
+        "tags": [
+          "comment-controller"
+        ],
+        "operationId": "deleteComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/club-management/{clubId}/member-requests/{userId}": {
       "delete": {
         "tags": [
@@ -2599,6 +2844,9 @@
           "authorFullName": {
             "type": "string"
           },
+          "authorAvtUrl": {
+            "type": "string"
+          },
           "clubId": {
             "type": "integer",
             "format": "int64"
@@ -2626,6 +2874,53 @@
           }
         }
       },
+      "CommentCreateParams": {
+        "required": [
+          "content",
+          "postId"
+        ],
+        "type": "object",
+        "properties": {
+          "postId": {
+            "pattern": "^[0-9]*$",
+            "type": "string"
+          },
+          "content": {
+            "maxLength": 2147483647,
+            "minLength": 5,
+            "type": "string"
+          }
+        }
+      },
+      "CommentResponse": {
+        "type": "object",
+        "properties": {
+          "commentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "authorUsername": {
+            "type": "string"
+          },
+          "authorFullName": {
+            "type": "string"
+          },
+          "authorAvtUrl": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "ClubAddPersonParams": {
         "required": [
           "roleInClub",
@@ -2648,13 +2943,13 @@
       "PageClubResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
@@ -2709,10 +3004,10 @@
             "type": "integer",
             "format": "int32"
           },
-          "paged": {
+          "unpaged": {
             "type": "boolean"
           },
-          "unpaged": {
+          "paged": {
             "type": "boolean"
           }
         }
@@ -2734,13 +3029,13 @@
       "PageUserResponse": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "size": {
             "type": "integer",
