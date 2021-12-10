@@ -1,17 +1,16 @@
-package hcmute.manage.club.uteclubs.framework.dto.post;
+package hcmute.manage.club.uteclubs.framework.dto.comment;
 
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class PostResponse {
-    private Long postId;
+public class CommentResponse {
+    private Long commentId;
     private String content;
-    private String imageUrl;
     private Date createdDate;
     private String authorUsername;
     private String authorFullName;
     private String authorAvtUrl;
-    private Long clubId;
+    private Long postId;
 }

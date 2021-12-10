@@ -19,7 +19,7 @@ public class PostController implements PostAPI {
     private final PostService postService;
 
     @Override
-    public ResponseEntity<List<PostResponse>> getAllByClubs(String clubId) {
+    public ResponseEntity<List<PostResponse>> getAllByClub(String clubId) {
         return ResponseEntity.ok(postService.getAllPosts(clubId));
     }
 

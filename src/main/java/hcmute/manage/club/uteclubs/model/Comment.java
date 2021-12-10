@@ -1,28 +1,27 @@
 package hcmute.manage.club.uteclubs.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long postId;
+    private Long commentId;
 
     @Column(nullable = false)
     @Type(type = "text")
     private String content;
-
-    @Column
-    private String imageUrl;
 
     @Column(nullable = false)
     private Date createdDate;
@@ -31,8 +30,5 @@ public class Post {
     private User author;
 
     @ManyToOne
-    private Club club;
-
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments;
+    private Post post;
 }

@@ -7,14 +7,8 @@ import hcmute.manage.club.uteclubs.framework.dto.post.PostCreateParams;
 import hcmute.manage.club.uteclubs.framework.dto.post.PostResponse;
 import hcmute.manage.club.uteclubs.framework.dto.post.PostSearchParams;
 import hcmute.manage.club.uteclubs.mapper.PostMapper;
-import hcmute.manage.club.uteclubs.model.Club;
-import hcmute.manage.club.uteclubs.model.Post;
-import hcmute.manage.club.uteclubs.model.User;
-import hcmute.manage.club.uteclubs.model.UserClub;
-import hcmute.manage.club.uteclubs.repository.ClubRepository;
-import hcmute.manage.club.uteclubs.repository.PostRepository;
-import hcmute.manage.club.uteclubs.repository.UserClubRepository;
-import hcmute.manage.club.uteclubs.repository.UserRepository;
+import hcmute.manage.club.uteclubs.model.*;
+import hcmute.manage.club.uteclubs.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +33,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final ClubRepository clubRepository;
     private final UserClubRepository userClubRepository;
+    private final CommentRepository commentRepository;
 
     public List<PostResponse> getAllPosts(String clubId) {
         Club club = getClubById(clubId);
@@ -77,6 +72,8 @@ public class PostService {
         User currentUser = getCurrentUser();
         validateLeaderModPermissions(currentUser, post.getClub());
 
+        List<Comment> comments = commentRepository.findCommentsByPost(post);
+        commentRepository.deleteAll(comments);
         postRepository.delete(post);
         return "This post has been deleted successfully";
     }
