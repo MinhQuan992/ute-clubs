@@ -36,7 +36,13 @@ public interface UserAPI {
     ResponseEntity<UserResponse> updateUserInfo(@Valid @RequestBody UserUpdateInfoParams params);
 
     @PutMapping("/change-password")
-    ResponseEntity<UserResponse> changePassword(@Valid @RequestBody UserChangePasswordParams params);
+    ResponseEntity<String> changePassword(@Valid @RequestBody UserChangePasswordParams params);
+
+    @PostMapping("reset-password/input-email")
+    ResponseEntity<UserResponse> validateEmail(@Valid @RequestBody UserInputEmailParam param);
+
+    @PutMapping("/reset-password/input-new-password")
+    ResponseEntity<String> resetPassword(@Valid @RequestBody UserInputOTPAndNewPassParams params);
 
     @GetMapping("/joined-clubs")
     ResponseEntity<List<ClubResponse>> getJoinedClubs();

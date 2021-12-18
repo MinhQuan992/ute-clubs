@@ -39,8 +39,18 @@ public class UserController implements UserAPI {
     }
 
     @Override
-    public ResponseEntity<UserResponse> changePassword(UserChangePasswordParams params) {
+    public ResponseEntity<String> changePassword(UserChangePasswordParams params) {
         return ResponseEntity.ok(userService.changePassword(params));
+    }
+
+    @Override
+    public ResponseEntity<UserResponse> validateEmail(UserInputEmailParam param) {
+        return ResponseEntity.ok(userService.validateEmail(param));
+    }
+
+    @Override
+    public ResponseEntity<String> resetPassword(UserInputOTPAndNewPassParams params) {
+        return ResponseEntity.ok(userService.resetPassword(params));
     }
 
     @Override
