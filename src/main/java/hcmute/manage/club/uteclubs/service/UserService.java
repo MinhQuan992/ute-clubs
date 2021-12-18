@@ -230,7 +230,11 @@ public class UserService implements UserDetailsService {
 
     private User getCurrentUser() {
         String currentUsername = getCurrentUsername();
-        return userRepository.findUserByUsername(currentUsername).get();
+        Optional<User> userOptional = userRepository.findUserByUsername(currentUsername);
+        if (userOptional.isEmpty()) {
+            throw new AccessTokenException(INVALID_OR_MISSED_ACCESS_TOKEN);
+        }
+        return userOptional.get();
     }
 
     private Club getClub(String clubId) {

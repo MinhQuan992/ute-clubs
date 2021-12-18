@@ -49,6 +49,16 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(customException, HttpStatus.BAD_REQUEST);
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AccessTokenException.class)
+    public ResponseEntity<CustomException> unauthorizedException(Exception exception) {
+        CustomException customException = new CustomException();
+        customException.setStatus(401);
+        customException.setError("Unauthorized");
+        customException.setMessage(exception.getMessage());
+        return new ResponseEntity<>(customException, HttpStatus.UNAUTHORIZED);
+    }
+
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(PermissionException.class)
     public ResponseEntity<CustomException> permissionException(Exception exception) {

@@ -5,10 +5,7 @@ import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -40,5 +37,13 @@ public interface ClubAPI_User {
                     String clubId,
             @Pattern(regexp = ROLE_IN_CLUB_PATTERN, message = "The role must be ROLE_LEADER, ROLE_MODERATOR or ROLE_MEMBER")
             @RequestParam String role
+    );
+
+    @DeleteMapping("/{clubId}/leave")
+    ResponseEntity<String> leaveClub(
+            @PathVariable("clubId")
+            @NotBlank(message = "The club ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                    String clubId
     );
 }

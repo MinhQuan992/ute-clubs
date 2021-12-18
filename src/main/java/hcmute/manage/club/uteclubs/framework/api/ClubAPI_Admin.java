@@ -2,6 +2,7 @@ package hcmute.manage.club.uteclubs.framework.api;
 
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubChangeRoleParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,15 @@ public interface ClubAPI_Admin {
             @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubId,
             @Valid @RequestBody ClubAddPersonParams params
+    );
+
+    @PostMapping("/{clubId}/change-role")
+    ResponseEntity<String> changeRole(
+            @PathVariable("clubId")
+            @NotBlank(message = "The club ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                    String clubId,
+            @Valid @RequestBody ClubChangeRoleParams params
     );
 
     @PutMapping("/{clubId}/update-info")

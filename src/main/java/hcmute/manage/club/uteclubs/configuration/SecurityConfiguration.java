@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.LOG_IN_URL;
 
@@ -36,6 +37,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         customAuthenticationFilter.setFilterProcessesUrl(LOG_IN_URL);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 
         http.authorizeRequests()
                 .antMatchers("/v1/**").permitAll()
