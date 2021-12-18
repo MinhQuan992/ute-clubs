@@ -1,13 +1,7 @@
 package hcmute.manage.club.uteclubs.service;
 
-import hcmute.manage.club.uteclubs.exception.InvalidRequestException;
-import hcmute.manage.club.uteclubs.exception.NoContentException;
-import hcmute.manage.club.uteclubs.exception.NotFoundException;
-import hcmute.manage.club.uteclubs.exception.PermissionException;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAcceptMemberParam;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
-import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
+import hcmute.manage.club.uteclubs.exception.*;
+import hcmute.manage.club.uteclubs.framework.dto.club.*;
 import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
 import hcmute.manage.club.uteclubs.mapper.ClubMapper;
 import hcmute.manage.club.uteclubs.mapper.UserMapper;
@@ -30,8 +24,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.CLUB_NOT_FOUND;
-import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.USER_NOT_FOUND;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.*;
 import static hcmute.manage.club.uteclubs.utility.UserUtility.getCurrentUsername;
 
 @Service
@@ -54,8 +47,7 @@ public class ClubService {
     }
 
     public List<ClubResponse> getManagedClubs() {
-        String currentUsername = getCurrentUsername();
-        User user = userRepository.findUserByUsername(currentUsername).get();
+        User user = getCurrentUser();
         return ClubMapper.INSTANCE.listClubToListClubDTO(userClubRepository.getManagedClubs(user));
     }
 
@@ -113,6 +105,51 @@ public class ClubService {
         userClubRepository.save(userClub);
         sendMail(user.getFullName(), user.getEmail(), club.getClubName(), role);
         return "This user has been added successfully";
+    }
+
+    public String changeRole(String clubId, ClubChangeRoleParams params, boolean isAdmin) {
+        Club club = getClubById(clubId);
+        String role = params.getNewRole();
+
+        if (!isAdmin) {
+            validateLeaderPermission(club);
+            if (role.equals("ROLE_LEADER")) {
+                throw new PermissionException("You cannot change anyone's role to role LEADER");
+            }
+        }
+
+        User user = getUserById(params.getUserId());
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
+        if (userClubOptional.isEmpty() || !userClubOptional.get().isAccepted()) {
+            throw new InvalidRequestException("This user is not in this club");
+        }
+
+        UserClub userClub = userClubOptional.get();
+        if (userClub.getRoleInClub().equals(role)) {
+            throw new InvalidRequestException("This user was already in this role");
+        }
+
+        boolean hasLeader = hasLeader(club);
+        if (role.equals("ROLE_LEADER") && hasLeader) {
+            throw new InvalidRequestException("This club already had a LEADER");
+        }
+
+        userClub.setRoleInClub(role);
+        userClubRepository.save(userClub);
+        return "The role of this user has been changed successfully";
+    }
+
+    public String leaveClub(String clubId) {
+        Club club = getClubById(clubId);
+        User user = getCurrentUser();
+
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
+        if (userClubOptional.isEmpty() || !userClubOptional.get().isAccepted()) {
+            throw new InvalidRequestException("You are not in this club");
+        }
+
+        userClubRepository.delete(userClubOptional.get());
+        return "You are no longer a member of this club";
     }
 
     public List<UserResponse> getMembersByRole(String clubId, String role) {
@@ -173,6 +210,15 @@ public class ClubService {
         return ClubMapper.INSTANCE.clubToClubDTO(clubRepository.save(club));
     }
 
+    private User getCurrentUser() {
+        String currentUsername = getCurrentUsername();
+        Optional<User> userOptional = userRepository.findUserByUsername(currentUsername);
+        if (userOptional.isEmpty()) {
+            throw new AccessTokenException(INVALID_OR_MISSED_ACCESS_TOKEN);
+        }
+        return userOptional.get();
+    }
+
     private Club getClubById(String clubId) {
         Long idInNumber = Long.parseLong(clubId);
         Optional<Club> club = clubRepository.findById(idInNumber);
@@ -214,9 +260,8 @@ public class ClubService {
     }
 
     private void validateLeaderPermission(Club club) {
-        String currentUsername = getCurrentUsername();
-        User currentUser = userRepository.findUserByUsername(currentUsername).get();
-        Optional<UserClub> userClub = userClubRepository.findUserClubByUserAndClub(currentUser, club);
+        User user = getCurrentUser();
+        Optional<UserClub> userClub = userClubRepository.findUserClubByUserAndClub(user, club);
 
         if (userClub.isEmpty()) {
             throw new PermissionException("You are not in this club");
@@ -228,9 +273,8 @@ public class ClubService {
     }
 
     private void validateLeaderModPermissions(Club club) {
-        String currentUsername = getCurrentUsername();
-        User currentUser = userRepository.findUserByUsername(currentUsername).get();
-        Optional<UserClub> userClub = userClubRepository.findUserClubByUserAndClub(currentUser, club);
+        User user = getCurrentUser();
+        Optional<UserClub> userClub = userClubRepository.findUserClubByUserAndClub(user, club);
 
         if (userClub.isEmpty()) {
             throw new PermissionException("You are not in this club");

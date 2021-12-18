@@ -3,6 +3,7 @@ package hcmute.manage.club.uteclubs.controller;
 import hcmute.manage.club.uteclubs.framework.api.ClubAPI_Admin;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddOrUpdateInfoParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubAddPersonParams;
+import hcmute.manage.club.uteclubs.framework.dto.club.ClubChangeRoleParams;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
 import hcmute.manage.club.uteclubs.service.ClubService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,11 @@ public class ClubControllerAdmin implements ClubAPI_Admin {
     @Override
     public ResponseEntity<String> addPersonToClub(String clubId, ClubAddPersonParams params) {
         return ResponseEntity.ok(clubService.addPersonToClub(clubId, params, true));
+    }
+
+    @Override
+    public ResponseEntity<String> changeRole(String clubId, ClubChangeRoleParams params) {
+        return ResponseEntity.ok(clubService.changeRole(clubId, params, true));
     }
 
     @Override

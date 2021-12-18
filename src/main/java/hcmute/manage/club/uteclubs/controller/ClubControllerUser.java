@@ -31,4 +31,9 @@ public class ClubControllerUser implements ClubAPI_User {
     public ResponseEntity<List<UserResponse>> getMembersByRole(String clubId, String role) {
         return ResponseEntity.ok(clubService.getMembersByRole(clubId, role));
     }
+
+    @Override
+    public ResponseEntity<String> leaveClub(String clubId) {
+        return ResponseEntity.ok(clubService.leaveClub(clubId));
+    }
 }

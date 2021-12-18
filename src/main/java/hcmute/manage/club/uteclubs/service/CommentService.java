@@ -2,6 +2,7 @@ package hcmute.manage.club.uteclubs.service;
 
 import hcmute.manage.club.uteclubs.exception.NoContentException;
 import hcmute.manage.club.uteclubs.exception.NotFoundException;
+import hcmute.manage.club.uteclubs.exception.AccessTokenException;
 import hcmute.manage.club.uteclubs.exception.PermissionException;
 import hcmute.manage.club.uteclubs.framework.dto.comment.CommentCreateParams;
 import hcmute.manage.club.uteclubs.framework.dto.comment.CommentResponse;
@@ -87,7 +88,11 @@ public class CommentService {
 
     private User getCurrentUser() {
         String currentUsername = getCurrentUsername();
-        return userRepository.findUserByUsername(currentUsername).get();
+        Optional<User> userOptional = userRepository.findUserByUsername(currentUsername);
+        if (userOptional.isEmpty()) {
+            throw new AccessTokenException(INVALID_OR_MISSED_ACCESS_TOKEN);
+        }
+        return userOptional.get();
     }
 
     private void validateMemberPermission(User user, Club club) {
