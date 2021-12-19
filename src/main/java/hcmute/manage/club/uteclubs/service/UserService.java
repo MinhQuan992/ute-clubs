@@ -18,12 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -81,8 +86,13 @@ public class UserService implements UserDetailsService {
         Date dob = parseDobFromStringToDate(dobInString);
         int otp = otpService.generateOTP(username);
         String mailSubject = "UTE Clubs | Verification Code to Sign Up";
-        String mailContent = "Dear " + fullName + ",\n"
-                + "This is your verification code: " + otp;
+        String mailContent = "<!DOCTYPE html><html><head><style>p, h2 {font-family: sans-serif;}</style></head>\n" +
+                "<body><p>Hi <span style=\"font-weight: bold;\">" + fullName + "</span>,</p>\n" +
+                "<p>This is your verification code to create your new account:</p>\n" +
+                "<h2 style=\"font-weight: bold; color: blue;\">" + otp + "</h2>\n" +
+                "<p>This code will be expired in 2 minutes. Don't share this code with anyone.</p>\n" +
+                "<p>Thanks for joining UTE Clubs! We hope you will enjoy great moments with us!</p>\n" +
+                "<p style=\"font-weight: bold;\">The UTE Clubs Team</p></body></html>";
         sendMail(email, mailSubject, mailContent);
         log.info("OTP is " + otp);
 
@@ -268,6 +278,22 @@ public class UserService implements UserDetailsService {
 
         userClubRepository.delete(userClub);
         return "Your request has been cancelled successfully";
+    }
+
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        SecurityContextHolder.clearContext();
+        if(session != null) {
+            session.invalidate();
+        }
+
+        if (request.getCookies() != null) {
+            for(Cookie cookie : request.getCookies()) {
+                cookie.setMaxAge(0);
+            }
+        }
+
+        return "You have been logged out successfully";
     }
 
     private User getUserById(String id) {

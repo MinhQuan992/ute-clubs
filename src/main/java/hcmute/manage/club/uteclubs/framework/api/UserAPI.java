@@ -7,11 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.List;
-import java.util.Optional;
 
 import static hcmute.manage.club.uteclubs.framework.common.RegexConstant.COMMON_ID_PATTERN;
 
@@ -60,4 +61,7 @@ public interface UserAPI {
             @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
                     String clubID
     );
+
+    @PostMapping("/logout")
+    ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response);
 }

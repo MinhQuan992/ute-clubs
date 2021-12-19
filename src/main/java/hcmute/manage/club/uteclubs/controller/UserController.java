@@ -10,8 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class UserController implements UserAPI {
 
     @Override
     public ResponseEntity<UserResponse> validateInfoAndGenerateOtp(UserSignUpWithoutOTPParams params) {
-        return new ResponseEntity<>(userService.validateInfoAndGenerateOTP(params), HttpStatus.CREATED);
+        return ResponseEntity.ok(userService.validateInfoAndGenerateOTP(params));
     }
 
     @Override
@@ -71,5 +72,10 @@ public class UserController implements UserAPI {
     @Override
     public ResponseEntity<String> cancelRequest(String clubId) {
         return ResponseEntity.ok(userService.cancelRequest(clubId));
+    }
+
+    @Override
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(userService.logout(request, response));
     }
 }

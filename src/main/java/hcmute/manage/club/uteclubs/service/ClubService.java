@@ -286,8 +286,13 @@ public class ClubService {
     }
 
     private void sendMail(String receiverName, String receiverMail, String club, String role) {
-        String content = "Dear " + receiverName + ",\n"
-                + "You have been added to " + club + ". Now you are a " + role.substring(5) + " of this club.";
+        String content = "<!DOCTYPE html><html><head><style>p, h2 {font-family: sans-serif;}\n" +
+                "span {font-weight: bold;}</style></head><body>\n" +
+                "<p>Hi <span>" + receiverName + "</span>,</p>\n" +
+                "<p>You have just been added to <span>" + club + "</span>. " +
+                "Now you are a <span>" + role.substring(5) + "</span> of this club.</p>\n" +
+                "<p>We hope you will enjoy great moments with your teammates in your club!</p>\n" +
+                "<p style=\"font-weight: bold;\">The UTE Clubs Team</p></body></html>";
         Mail mail = new Mail();
         mail.setMailFrom("uteclubs@gmail.com");
         mail.setMailTo(receiverMail);
