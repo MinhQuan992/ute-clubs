@@ -18,12 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -80,7 +85,15 @@ public class UserService implements UserDetailsService {
 
         Date dob = parseDobFromStringToDate(dobInString);
         int otp = otpService.generateOTP(username);
-        sendMail(fullName, email, otp);
+        String mailSubject = "UTE Clubs | Verification Code to Sign Up";
+        String mailContent = "<!DOCTYPE html><html><head><style>p, h2 {font-family: sans-serif;}</style></head>\n" +
+                "<body><p>Hi <span style=\"font-weight: bold;\">" + fullName + "</span>,</p>\n" +
+                "<p>This is your verification code to create your new account:</p>\n" +
+                "<h2 style=\"font-weight: bold; color: blue;\">" + otp + "</h2>\n" +
+                "<p>This code will be expired in 2 minutes. Don't share this code with anyone.</p>\n" +
+                "<p>Thanks for joining UTE Clubs! We hope you will enjoy great moments with us!</p>\n" +
+                "<p style=\"font-weight: bold;\">The UTE Clubs Team</p></body></html>";
+        sendMail(email, mailSubject, mailContent);
         log.info("OTP is " + otp);
 
         User createdUser = createUser(fullName, studentId, gender, faculty, major,
@@ -140,7 +153,7 @@ public class UserService implements UserDetailsService {
         return UserMapper.INSTANCE.userToUserDTO(userRepository.save(currentUser));
     }
 
-    public UserResponse changePassword(UserChangePasswordParams params) {
+    public String changePassword(UserChangePasswordParams params) {
         User currentUser = getCurrentUser();
 
         String oldPassword, newPassword, confirmedPassword;
@@ -157,7 +170,55 @@ public class UserService implements UserDetailsService {
         }
 
         currentUser.setPassword(passwordEncoder.encode(newPassword));
-        return UserMapper.INSTANCE.userToUserDTO(userRepository.save(currentUser));
+        userRepository.save(currentUser);
+        return "Your password has been changed successfully";
+    }
+
+    public UserResponse validateEmail(UserInputEmailParam param) {
+        Optional<User> userOptional = userRepository.findUserByEmail(param.getEmail());
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+        int otp = otpService.generateOTP(user.getUsername());
+        String mailSubject = "UTE Clubs | Verification Code to Reset Password";
+        String mailContent = "<!DOCTYPE html><html><head><style>p, h2 {font-family: sans-serif;}</style></head><body>" +
+                "<p>Hi <span style=\"font-weight: bold;\">" + user.getFullName() + "</span>,</p>" +
+                "<p>This is your verification code to reset your password:</p>" +
+                "<h2 style=\"font-weight: bold; color: blue;\">" + otp + "</h2>" +
+                "<p>This code will be expired in 2 minutes. Don't share this code with anyone.</p>" +
+                "<p>Thanks for joining UTE Clubs!</p>" +
+                "<p style=\"font-weight: bold;\">The UTE Clubs Team</p></body></html>";
+        sendMail(user.getEmail(), mailSubject, mailContent);
+        log.info("OTP is {}", otp);
+        return UserMapper.INSTANCE.userToUserDTO(user);
+    }
+
+    public String resetPassword(UserInputOTPAndNewPassParams params) {
+        Optional<User> userOptional = userRepository.findUserByUsername(params.getUsername());
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+        int inputOtp = Integer.parseInt(params.getOtp());
+        int serverOtp = otpService.getOtp(user.getUsername());
+        if (serverOtp > 0) {
+            if (inputOtp != serverOtp) {
+                throw new OtpException("This code is wrong. Please try again");
+            }
+
+            if (!params.getNewPassword().equals(params.getConfirmedPassword())) {
+                throw new PasswordsDoNotMatchException(PASSWORDS_DO_NOT_MATCH);
+            }
+
+            user.setPassword(passwordEncoder.encode(params.getNewPassword()));
+            userRepository.save(user);
+            return "Your password has been reset successfully";
+        } else {
+            throw new OtpException("This code is expired. Please get a new code");
+        }
     }
 
     public List<ClubResponse> getJoinedClubs() {
@@ -217,6 +278,22 @@ public class UserService implements UserDetailsService {
 
         userClubRepository.delete(userClub);
         return "Your request has been cancelled successfully";
+    }
+
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        SecurityContextHolder.clearContext();
+        if(session != null) {
+            session.invalidate();
+        }
+
+        if (request.getCookies() != null) {
+            for(Cookie cookie : request.getCookies()) {
+                cookie.setMaxAge(0);
+            }
+        }
+
+        return "You have been logged out successfully";
     }
 
     private User getUserById(String id) {
@@ -307,13 +384,11 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    private void sendMail(String receiverName, String receiverMail, int otp) {
-        String content = "Dear " + receiverName + ",\n"
-                + "This is your verification code: " + otp;
+    private void sendMail(String receiverMail, String subject, String content) {
         Mail mail = new Mail();
         mail.setMailFrom("uteclubs@gmail.com");
         mail.setMailTo(receiverMail);
-        mail.setMailSubject("UTE Clubs | Verification Code to Sign Up");
+        mail.setMailSubject(subject);
         mail.setMailContent(content);
 
         MailService mailService = (MailService) context.getBean("mailService");
