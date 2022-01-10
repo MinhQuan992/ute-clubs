@@ -27,6 +27,9 @@ public interface UserAPI {
                     String userId
     );
 
+    @GetMapping("/current-user")
+    ResponseEntity<UserResponse> getCurrentUser();
+
     @PostMapping("/signup")
     ResponseEntity<UserResponse> validateInfoAndGenerateOtp(@Valid @RequestBody UserSignUpWithoutOTPParams params);
 

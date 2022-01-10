@@ -59,4 +59,16 @@ public interface ClubAPI_Admin {
                     String clubId,
             @Valid @RequestBody ClubAddOrUpdateInfoParams params
     );
+
+  @DeleteMapping("/{clubId}/remove-member/{userId}")
+  ResponseEntity<String> removeMember(
+          @PathVariable("clubId")
+          @NotBlank(message = "The club ID is required")
+          @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                  String clubId,
+          @PathVariable("userId")
+          @NotBlank(message = "The user ID is required")
+          @Pattern(regexp = COMMON_ID_PATTERN, message = "The user ID must contain numeric characters only")
+                  String userId
+  );
 }

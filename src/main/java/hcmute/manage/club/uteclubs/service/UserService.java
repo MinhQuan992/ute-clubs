@@ -68,6 +68,11 @@ public class UserService implements UserDetailsService {
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
+    public UserResponse getCurrentUserDTO() {
+        User user = getCurrentUser();
+        return UserMapper.INSTANCE.userToUserDTO(user);
+    }
+
     public UserResponse validateInfoAndGenerateOTP(UserSignUpWithoutOTPParams params) {
         String fullName = params.getFullName();
         String studentId = params.getStudentId();

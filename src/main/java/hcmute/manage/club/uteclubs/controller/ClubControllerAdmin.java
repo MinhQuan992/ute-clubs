@@ -48,4 +48,9 @@ public class ClubControllerAdmin implements ClubAPI_Admin {
     public ResponseEntity<ClubResponse> updateInfo(String clubId, ClubAddOrUpdateInfoParams params) {
         return ResponseEntity.ok(clubService.updateInfo(clubId, params));
     }
+
+    @Override
+    public ResponseEntity<String> removeMember(String clubId, String userId) {
+        return ResponseEntity.ok(clubService.removeMember(clubId, userId, true));
+    }
 }

@@ -1,5 +1,6 @@
 package hcmute.manage.club.uteclubs.configuration;
 
+import com.google.common.collect.ImmutableList;
 import hcmute.manage.club.uteclubs.filter.CustomAuthenticationFilter;
 import hcmute.manage.club.uteclubs.filter.CustomAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static hcmute.manage.club.uteclubs.framework.common.SecurityConstant.LOG_IN_URL;
 
@@ -37,9 +40,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         customAuthenticationFilter.setFilterProcessesUrl(LOG_IN_URL);
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 
-        http.authorizeRequests()
+        http.cors().and().authorizeRequests()
                 .antMatchers("/v1/**").permitAll()
                 .antMatchers("/users/signup").permitAll()
                 .antMatchers("/users/signup/*").permitAll()
@@ -50,6 +52,22 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(ImmutableList.of("*"));
+        configuration.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+        // setAllowCredentials(true) is important, otherwise:
+        // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
+        configuration.setAllowCredentials(true);
+        // setAllowedHeaders is important! Without it, OPTIONS preflight request
+        // will fail with 403 Invalid CORS request
+        configuration.setAllowedHeaders(ImmutableList.of("Authorization", "Cache-Control", "Content-Type"));
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
