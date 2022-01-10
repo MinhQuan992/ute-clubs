@@ -139,6 +139,26 @@ public class ClubService {
         return "The role of this user has been changed successfully";
     }
 
+    public String removeMember(String clubId, String userId, boolean isAdmin) {
+        Club club = getClubById(clubId);
+        User user = getUserById(userId);
+
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
+        if (userClubOptional.isEmpty() || !userClubOptional.get().isAccepted()) {
+            throw new InvalidRequestException("This user is not in this club");
+        }
+        UserClub userClub = userClubOptional.get();
+
+        if (!isAdmin) {
+            validateLeaderPermission(club);
+            if (userClub.getRoleInClub().equals("ROLE_LEADER")) {
+                throw new PermissionException("You cannot do this action");
+            }
+        }
+        userClubRepository.delete(userClub);
+        return "This user has been removed from this club";
+    }
+
     public String leaveClub(String clubId) {
         Club club = getClubById(clubId);
         User user = getCurrentUser();

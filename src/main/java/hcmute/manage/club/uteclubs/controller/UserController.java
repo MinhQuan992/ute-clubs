@@ -25,6 +25,11 @@ public class UserController implements UserAPI {
     }
 
     @Override
+    public ResponseEntity<UserResponse> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUserDTO());
+    }
+
+    @Override
     public ResponseEntity<UserResponse> validateInfoAndGenerateOtp(UserSignUpWithoutOTPParams params) {
         return ResponseEntity.ok(userService.validateInfoAndGenerateOTP(params));
     }

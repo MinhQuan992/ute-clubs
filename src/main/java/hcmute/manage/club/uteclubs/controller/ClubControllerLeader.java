@@ -54,4 +54,9 @@ public class ClubControllerLeader implements ClubAPI_Leader {
     public ResponseEntity<String> rejectMember(String clubId, String userId) {
         return ResponseEntity.ok(clubService.rejectMember(clubId, userId));
     }
+
+    @Override
+    public ResponseEntity<String> removeMember(String clubId, String userId) {
+        return ResponseEntity.ok(clubService.removeMember(clubId, userId, false));
+    }
 }
