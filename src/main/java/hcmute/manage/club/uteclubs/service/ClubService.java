@@ -172,6 +172,18 @@ public class ClubService {
         return "You are no longer a member of this club";
     }
 
+    public String getRoleInClubOfCurrentUser(String clubId) {
+        Club club = getClubById(clubId);
+        User user = getCurrentUser();
+
+        Optional<UserClub> userClubOptional = userClubRepository.findUserClubByUserAndClub(user, club);
+        if (userClubOptional.isEmpty() || !userClubOptional.get().isAccepted()) {
+            throw new InvalidRequestException("You are not in this club");
+        }
+
+        return userClubOptional.get().getRoleInClub();
+    }
+
     public List<UserResponse> getMembersByRole(String clubId, String role) {
         Club club = getClubById(clubId);
         List<User> result = userClubRepository.getMembersUsingRole(club, role);

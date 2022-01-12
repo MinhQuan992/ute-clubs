@@ -39,6 +39,14 @@ public interface ClubAPI_User {
             @RequestParam String role
     );
 
+    @GetMapping("/{clubId}/get-role")
+    ResponseEntity<String> getRoleInClubOfCurrentUser(
+            @PathVariable("clubId")
+            @NotBlank(message = "The club ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                    String clubId
+    );
+
     @DeleteMapping("/{clubId}/leave")
     ResponseEntity<String> leaveClub(
             @PathVariable("clubId")
