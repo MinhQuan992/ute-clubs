@@ -33,6 +33,11 @@ public class ClubControllerUser implements ClubAPI_User {
     }
 
     @Override
+    public ResponseEntity<String> getRoleInClubOfCurrentUser(String clubId) {
+        return ResponseEntity.ok(clubService.getRoleInClubOfCurrentUser(clubId));
+    }
+
+    @Override
     public ResponseEntity<String> leaveClub(String clubId) {
         return ResponseEntity.ok(clubService.leaveClub(clubId));
     }
