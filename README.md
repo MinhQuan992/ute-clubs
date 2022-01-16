@@ -28,7 +28,8 @@
   | CLIENT_TIME_ZONE  | Múi giờ của người dùng  | Không  |
   | EMAIL_USERNAME  | Địa chỉ email dùng để gửi email tự động cho người dùng  | Có  |
   | EMAIL_PASSWORD  | Mật khẩu email dùng để gửi email tự động cho người dùng  | Có  |
-  Đối với các biến môi trường không bắt buộc khai báo, nếu người dùng không khai báo thì hệ thống sẽ sử dụng giá trị mặc định được gán sẵn trong file __application.yaml__ ở thư mục _./src/main/resources_.
+  
+- Đối với các biến môi trường không bắt buộc khai báo, nếu người dùng không khai báo thì hệ thống sẽ sử dụng giá trị mặc định được gán sẵn trong file __application.yaml__ ở thư mục _./src/main/resources_.
 
 ### Bước 3: Chạy chương trình
 Nhấn tổ hợp phím Shift + F10 trong IntelliJ IDEA để khởi chạy chương trình.
