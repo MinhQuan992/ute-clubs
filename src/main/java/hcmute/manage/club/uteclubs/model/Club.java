@@ -41,4 +41,17 @@ public class Club {
 
     @OneToMany(mappedBy = "club")
     private List<Post> posts;
+
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Event> events;
+
+    public void addEvent(Event event) {
+        this.events.add(event);
+        event.setClub(this);
+    }
+
+    public void removeEvent(Event event) {
+        event.setClub(null);
+        this.events.remove(event);
+    }
 }
