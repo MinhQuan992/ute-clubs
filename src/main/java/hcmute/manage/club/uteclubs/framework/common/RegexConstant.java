@@ -23,4 +23,5 @@ public class RegexConstant {
                     + "|^((lt|eq|gt)((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))$"
                     + "|^((lt|eq|gt)((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))$"
                     + "|^((lt|eq|gt)((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))$";
+    public static final String EVENT_STATUS_PATTERN = "^past|ongoing|upcoming|$";
 }

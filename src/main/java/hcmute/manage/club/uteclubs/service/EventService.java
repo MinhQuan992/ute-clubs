@@ -9,6 +9,8 @@ import hcmute.manage.club.uteclubs.framework.common.CommonConstant;
 import hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventCreateParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventResponse;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchByClubAndStatusParams;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventUpdateParams;
 import hcmute.manage.club.uteclubs.mapper.EventMapper;
 import hcmute.manage.club.uteclubs.model.Club;
@@ -23,9 +25,12 @@ import hcmute.manage.club.uteclubs.utility.UserUtility;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -140,10 +145,87 @@ public class EventService {
   }
 
   public Page<EventResponse> getEvents(Optional<Integer> page) {
-    Page<Event> result = eventRepository.findAllByIsActiveIsTrue(PageRequest.of(page.orElse(0), 10));
+    Page<Event> result =
+        eventRepository.findAllByIsActiveIsTrue(PageRequest.of(page.orElse(0), 10));
     if (result.isEmpty()) {
       throw new NoContentException();
     }
     return result.map(EventMapper.INSTANCE::eventToEventDTO);
+  }
+
+  public List<EventResponse> searchEvents(EventSearchParams params) {
+    if ((StringUtils.isNotEmpty(params.getStartTime()) && StringUtils.isEmpty(params.getEndTime()))
+        || (StringUtils.isNotEmpty(params.getEndTime())
+            && StringUtils.isEmpty(params.getStartTime()))) {
+      throw new InvalidRequestException("Start time and end time must be provided together");
+    }
+
+    List<Event> events = eventRepository.findAllByNameContainsAndIsActiveIsTrue(params.getName());
+
+    if (StringUtils.isNotEmpty(params.getClubId())) {
+      List<Event> eventsFilteredByClub = filterByClub(events, params.getClubId());
+      events.removeIf(event -> !eventsFilteredByClub.contains(event));
+    }
+
+    if (StringUtils.isNotEmpty(params.getStartTime())
+        && StringUtils.isNotEmpty(params.getEndTime())) {
+      List<Event> eventFilteredByTime =
+          filterByTime(events, params.getStartTime(), params.getEndTime());
+      events.removeIf(event -> !eventFilteredByTime.contains(event));
+    }
+
+    if (events.isEmpty()) {
+      throw new NoContentException();
+    }
+
+    return EventMapper.INSTANCE.listEventToListEventDTO(events);
+  }
+
+  private List<Event> filterByClub(List<Event> events, String clubId) {
+    Club club =
+        clubRepository
+            .findById(Long.parseLong(clubId))
+            .orElseThrow(() -> new NotFoundException(ExceptionMessageConstant.CLUB_NOT_FOUND));
+
+    return events.stream().filter(event -> event.getClub() == club).collect(Collectors.toList());
+  }
+
+  private List<Event> filterByTime(List<Event> events, String startTime, String endTime) {
+    Map<String, LocalDateTime> timeMap = getTime(startTime, endTime);
+    return events.stream()
+        .filter(
+            event -> isSuitableTime(event, timeMap.get(START_TIME_KEY), timeMap.get(END_TIME_KEY)))
+        .collect(Collectors.toList());
+  }
+
+  private boolean isSuitableTime(Event event, LocalDateTime startTime, LocalDateTime endTime) {
+    return (event.getStartTime().isEqual(startTime) || event.getStartTime().isAfter(startTime))
+        && (event.getEndTime().isBefore(endTime) || event.getEndTime().isEqual(endTime));
+  }
+
+  public List<EventResponse> searchEventsByClubAndStatus(EventSearchByClubAndStatusParams params) {
+    Club club =
+        clubRepository
+            .findById(Long.parseLong(params.getClubId()))
+            .orElseThrow(() -> new NotFoundException(ExceptionMessageConstant.CLUB_NOT_FOUND));
+
+    List<Event> events = eventRepository.findAllByClubEqualsAndIsActiveIsTrue(club);
+    LocalDateTime now = LocalDateTime.now();
+    List<Event> filteredEvents = switch (params.getStatus()) {
+      case "past" -> events.stream().filter(event -> event.getEndTime().isBefore(now)).collect(
+          Collectors.toList());
+      case "ongoing" -> events.stream()
+          .filter(event -> (event.getStartTime().isBefore(now) || event.getStartTime().isEqual(now)) && (event.getEndTime().isAfter(now) || event.getEndTime().equals(now)))
+          .collect(
+              Collectors.toList());
+      default -> events.stream().filter(event -> event.getStartTime().isAfter(now)).collect(
+          Collectors.toList());
+    };
+
+    if (filteredEvents.isEmpty()) {
+      throw new NoContentException();
+    }
+
+    return EventMapper.INSTANCE.listEventToListEventDTO(filteredEvents);
   }
 }

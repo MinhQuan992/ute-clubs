@@ -2,8 +2,11 @@ package hcmute.manage.club.uteclubs.framework.api;
 
 import hcmute.manage.club.uteclubs.framework.common.RegexConstant;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventCreateParams;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchByClubAndStatusParams;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventUpdateParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventResponse;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -47,4 +50,11 @@ public interface EventAPI {
               regexp = RegexConstant.COMMON_ID_PATTERN,
               message = "The event ID must contain numeric characters only")
           String eventId);
+
+  @PostMapping("/search")
+  ResponseEntity<List<EventResponse>> searchEvents(@Valid @RequestBody EventSearchParams params);
+
+  @PostMapping("/search-by-club-and-status")
+  ResponseEntity<List<EventResponse>> searchEventsByClubAndStatus(
+      @Valid @RequestBody EventSearchByClubAndStatusParams params);
 }
