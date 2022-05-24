@@ -3,7 +3,7 @@ spring:
     url: jdbc:mysql://${ute-clubs.DB_ADDRESS:localhost}:${ute-clubs.DB_PORT:3306}/${ute-clubs.DB_DATABASE:club_management}?serverTimezone=UTC&useLegacyDatetimeCode=false
     username: ${ute-clubs.DB_USERNAME}
     password: ${ute-clubs.DB_PASSWORD}
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     time-zone: ${ute-clubs.CLIENT_TIME_ZONE:Asia/Ho_Chi_Minh}
   mail:
