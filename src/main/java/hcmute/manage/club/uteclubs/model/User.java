@@ -53,15 +53,31 @@ public class User {
     private String avatarUrl;
 
     @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
     )
     private List<UserClub> participatedClubs;
+
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<UserEvent> registeredEvents;
 
     @OneToMany(mappedBy = "author")
     private List<Post> posts;
 
     @OneToMany(mappedBy = "author")
     private List<Comment> comments;
+
+    public void addRegisteredEvent(UserEvent event) {
+        this.registeredEvents.add(event);
+    }
+
+    public void removeRegisteredEvent(UserEvent event) {
+        event.setUser(null);
+        this.registeredEvents.remove(event);
+    }
 }

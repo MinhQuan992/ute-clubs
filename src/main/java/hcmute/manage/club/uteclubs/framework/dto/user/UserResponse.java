@@ -3,8 +3,10 @@ package hcmute.manage.club.uteclubs.framework.dto.user;
 import lombok.Data;
 
 import java.util.Date;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@SuperBuilder
 public class UserResponse {
     private Long userId;
     private String fullName;
