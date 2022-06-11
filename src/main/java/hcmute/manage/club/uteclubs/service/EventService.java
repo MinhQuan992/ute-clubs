@@ -8,22 +8,29 @@ import hcmute.manage.club.uteclubs.exception.PermissionException;
 import hcmute.manage.club.uteclubs.framework.common.CommonConstant;
 import hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventCreateParams;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventResponse;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventRollCallParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchByClubAndStatusParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventUpdateParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserEventResponse;
 import hcmute.manage.club.uteclubs.mapper.EventMapper;
+import hcmute.manage.club.uteclubs.mapper.UserEventMapper;
 import hcmute.manage.club.uteclubs.model.Club;
 import hcmute.manage.club.uteclubs.model.Event;
 import hcmute.manage.club.uteclubs.model.User;
 import hcmute.manage.club.uteclubs.model.UserClub;
+import hcmute.manage.club.uteclubs.model.UserEvent;
 import hcmute.manage.club.uteclubs.repository.ClubRepository;
 import hcmute.manage.club.uteclubs.repository.EventRepository;
 import hcmute.manage.club.uteclubs.repository.UserClubRepository;
+import hcmute.manage.club.uteclubs.repository.UserEventRepository;
 import hcmute.manage.club.uteclubs.repository.UserRepository;
 import hcmute.manage.club.uteclubs.utility.UserUtility;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +49,12 @@ public class EventService {
   private final ClubRepository clubRepository;
   private final UserRepository userRepository;
   private final UserClubRepository userClubRepository;
+  private final UserEventRepository userEventRepository;
+  private final UserEventMapper userEventMapper;
 
   private static final String START_TIME_KEY = "startTime";
   private static final String END_TIME_KEY = "endTime";
+  private static final Integer NUMBER_OF_SECONDS_IN_TWO_DAYS = 60 * 60 * 24 * 2;
 
   public EventResponse createEvent(EventCreateParams params) {
     Map<String, LocalDateTime> timeMap = getTime(params.getStartTime(), params.getEndTime());
@@ -227,5 +237,90 @@ public class EventService {
     }
 
     return EventMapper.INSTANCE.listEventToListEventDTO(filteredEvents);
+  }
+
+  public String registerToEvent(EventRegisterParam param) {
+    User currentUser = getCurrentUser();
+    Event event = getEventById(param.getEventId());
+
+    Optional<UserEvent> userEvent = userEventRepository.findByUserAndEvent(currentUser, event);
+    if (userEvent.isPresent()) {
+      throw new InvalidRequestException("You have already registered to this event");
+    }
+
+    LocalDateTime now = LocalDateTime.now();
+    if (!now.isBefore(event.getStartTime())) {
+      throw new InvalidRequestException("Cannot register, the event was started");
+    }
+
+    if (event.getParticipants().size() == event.getMaximumParticipants()) {
+      throw new InvalidRequestException("Cannot register, the event had enough participants");
+    }
+
+    currentUser.addRegisteredEvent(new UserEvent(currentUser, event, false));
+    userRepository.save(currentUser);
+    return "You have successfully registered to this event";
+  }
+
+  public String cancelEventRegistration(String eventId) {
+    User currentUser = getCurrentUser();
+    Event event = getEventById(eventId);
+
+    Optional<UserEvent> userEvent = userEventRepository.findByUserAndEvent(currentUser, event);
+    if (userEvent.isEmpty()) {
+      throw new InvalidRequestException("You haven't registered to this event");
+    }
+
+    LocalDateTime now = LocalDateTime.now();
+    if (!now.isBefore(event.getStartTime())) {
+      throw new InvalidRequestException("Cannot cancel, the event was started");
+    }
+
+    long differenceSeconds = ChronoUnit.SECONDS.between(now, event.getStartTime());
+    if (differenceSeconds < NUMBER_OF_SECONDS_IN_TWO_DAYS) {
+      throw new InvalidRequestException("Cannot cancel from this time");
+    }
+
+    currentUser.removeRegisteredEvent(userEvent.get());
+    userRepository.save(currentUser);
+    return "Your registration has been cancelled successfully";
+  }
+
+  public List<EventResponse> getRegisteredEventsForUser() {
+    User user = getCurrentUser();
+    List<Event> registeredEvents = user.getRegisteredEvents()
+        .stream()
+        .map(UserEvent::getEvent)
+        .collect(Collectors.toList());
+    registeredEvents.removeIf(event -> !event.isActive());
+
+    if (registeredEvents.isEmpty()) {
+      throw new NoContentException();
+    }
+
+    return EventMapper.INSTANCE.listEventToListEventDTO(registeredEvents);
+  }
+
+  public List<UserEventResponse> getParticipantsOfEvent(String eventId) {
+    Event event = getEventById(eventId);
+    validateLeaderModPermissions(event.getClub());
+    List<UserEvent> participants = userEventRepository.findAllByEvent(event);
+    if (participants.isEmpty()) {
+      throw new NoContentException();
+    }
+    return userEventMapper.listUserEventToListUserEventDTO(participants);
+  }
+
+  public UserEventResponse rollCall(EventRollCallParams params) {
+    Event event = getEventById(params.getEventId());
+    validateLeaderModPermissions(event.getClub());
+    User user = userRepository.findById(Long.parseLong(params.getUserId()))
+        .orElseThrow(() -> new NotFoundException(ExceptionMessageConstant.USER_NOT_FOUND));
+
+    UserEvent userEvent = userEventRepository.findByUserAndEvent(user, event)
+        .orElseThrow(() -> new InvalidRequestException("This user hasn't registered to this event"));
+
+    userEvent.setJoined(params.getJoined());
+    return userEventMapper.userEventToUserEventDTO(userEventRepository.save(userEvent));
   }
 }

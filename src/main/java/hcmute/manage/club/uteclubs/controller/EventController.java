@@ -2,10 +2,13 @@ package hcmute.manage.club.uteclubs.controller;
 
 import hcmute.manage.club.uteclubs.framework.api.EventAPI;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventCreateParams;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventResponse;
+import hcmute.manage.club.uteclubs.framework.dto.event.EventRollCallParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchByClubAndStatusParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventSearchParams;
 import hcmute.manage.club.uteclubs.framework.dto.event.EventUpdateParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserEventResponse;
 import hcmute.manage.club.uteclubs.service.EventService;
 import java.util.List;
 import java.util.Optional;
@@ -49,5 +52,30 @@ public class EventController implements EventAPI {
   public ResponseEntity<List<EventResponse>> searchEventsByClubAndStatus(
       EventSearchByClubAndStatusParams params) {
     return ResponseEntity.ok(eventService.searchEventsByClubAndStatus(params));
+  }
+
+  @Override
+  public ResponseEntity<String> registerToEvent(EventRegisterParam param) {
+    return ResponseEntity.ok(eventService.registerToEvent(param));
+  }
+
+  @Override
+  public ResponseEntity<String> cancelEventRegistration(String eventId) {
+    return ResponseEntity.ok(eventService.cancelEventRegistration(eventId));
+  }
+
+  @Override
+  public ResponseEntity<List<EventResponse>> getRegisteredEventsForUser() {
+    return ResponseEntity.ok(eventService.getRegisteredEventsForUser());
+  }
+
+  @Override
+  public ResponseEntity<List<UserEventResponse>> getParticipantsOfEvent(String eventId) {
+    return ResponseEntity.ok(eventService.getParticipantsOfEvent(eventId));
+  }
+
+  @Override
+  public ResponseEntity<UserEventResponse> rollCall(EventRollCallParams params) {
+    return ResponseEntity.ok(eventService.rollCall(params));
   }
 }
