@@ -1,37 +1,56 @@
 package hcmute.manage.club.uteclubs.service;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
+import com.amazonaws.services.simpleemail.model.Body;
+import com.amazonaws.services.simpleemail.model.Content;
+import com.amazonaws.services.simpleemail.model.Destination;
+import com.amazonaws.services.simpleemail.model.Message;
+import com.amazonaws.services.simpleemail.model.SendEmailRequest;
+import hcmute.manage.club.uteclubs.UteClubsConfigProperties;
 import hcmute.manage.club.uteclubs.model.Mail;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.io.UnsupportedEncodingException;
-
 @Service
-@NoArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class MailService {
-    @Autowired
-    private JavaMailSender mailSender;
+  private final UteClubsConfigProperties uteClubsConfigProperties;
 
-    public void sendEmail(Mail mail) {
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-            mimeMessageHelper.setSubject(mail.getMailSubject());
-            mimeMessageHelper.setFrom(new InternetAddress(mail.getMailFrom(), "UTE Clubs"));
-            mimeMessageHelper.setTo(mail.getMailTo());
-            mimeMessageHelper.setText(mail.getMailContent(), true);
-
-            mailSender.send(mimeMessageHelper.getMimeMessage());
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+  public void sendEmail(Mail mail) {
+    try {
+      AWSCredentials credentials =
+          new BasicAWSCredentials(
+              uteClubsConfigProperties.getAccessKey(), uteClubsConfigProperties.getSecretKey());
+      AmazonSimpleEmailService client =
+          AmazonSimpleEmailServiceClientBuilder.standard()
+              .withRegion(Regions.US_EAST_1)
+              .withCredentials(new AWSStaticCredentialsProvider(credentials))
+              .build();
+      SendEmailRequest request =
+          new SendEmailRequest()
+              .withDestination(new Destination().withToAddresses(mail.getMailTo()))
+              .withMessage(
+                  new Message()
+                      .withBody(
+                          new Body()
+                              .withHtml(
+                                  new Content()
+                                      .withCharset("UTF-8")
+                                      .withData(mail.getMailContent())))
+                      .withSubject(
+                          new Content().withCharset("UTF-8").withData(mail.getMailSubject())))
+              .withSource(mail.getMailFrom());
+      client.sendEmail(request);
+      log.info("Email sent!");
+    } catch (Exception ex) {
+      log.error("The email was not sent. Error message: {}", ex.getMessage());
     }
+  }
 }

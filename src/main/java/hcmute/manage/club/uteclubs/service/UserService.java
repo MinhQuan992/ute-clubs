@@ -1,9 +1,33 @@
 package hcmute.manage.club.uteclubs.service;
 
-import hcmute.manage.club.uteclubs.exception.*;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.CLUB_NOT_FOUND;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.INVALID_OR_MISSED_ACCESS_TOKEN;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.PASSWORDS_DO_NOT_MATCH;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.STUDENT_ID_IS_EXISTING;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.UNDERAGE;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.USER_NOT_FOUND;
+import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.WRONG_DATE_FORMAT;
+import static hcmute.manage.club.uteclubs.utility.DateUtilities.differenceInYear;
+import static hcmute.manage.club.uteclubs.utility.UserUtility.getCurrentUsername;
+
+import hcmute.manage.club.uteclubs.exception.AccessTokenException;
+import hcmute.manage.club.uteclubs.exception.DateException;
+import hcmute.manage.club.uteclubs.exception.InvalidRequestException;
+import hcmute.manage.club.uteclubs.exception.NoContentException;
+import hcmute.manage.club.uteclubs.exception.NotFoundException;
+import hcmute.manage.club.uteclubs.exception.OtpException;
+import hcmute.manage.club.uteclubs.exception.PasswordsDoNotMatchException;
+import hcmute.manage.club.uteclubs.exception.ResourceConflictException;
+import hcmute.manage.club.uteclubs.exception.UnderageException;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubRegisterParam;
 import hcmute.manage.club.uteclubs.framework.dto.club.ClubResponse;
-import hcmute.manage.club.uteclubs.framework.dto.user.*;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserChangePasswordParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserInputEmailParam;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserInputOTPAndNewPassParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserResponse;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithOTPParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserSignUpWithoutOTPParams;
+import hcmute.manage.club.uteclubs.framework.dto.user.UserUpdateInfoParams;
 import hcmute.manage.club.uteclubs.mapper.ClubMapper;
 import hcmute.manage.club.uteclubs.mapper.UserMapper;
 import hcmute.manage.club.uteclubs.model.Club;
@@ -13,10 +37,20 @@ import hcmute.manage.club.uteclubs.model.UserClub;
 import hcmute.manage.club.uteclubs.repository.ClubRepository;
 import hcmute.manage.club.uteclubs.repository.UserClubRepository;
 import hcmute.manage.club.uteclubs.repository.UserRepository;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,26 +59,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static hcmute.manage.club.uteclubs.framework.common.ExceptionMessageConstant.*;
-import static hcmute.manage.club.uteclubs.utility.DateUtilities.differenceInYear;
-import static hcmute.manage.club.uteclubs.utility.UserUtility.getCurrentUsername;
-
 @Service
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-    @Autowired
-    private ApplicationContext context;
+    private final MailService mailService;
     private final OtpService otpService;
     private final UserRepository userRepository;
     private final ClubRepository clubRepository;
@@ -395,8 +415,6 @@ public class UserService implements UserDetailsService {
         mail.setMailTo(receiverMail);
         mail.setMailSubject(subject);
         mail.setMailContent(content);
-
-        MailService mailService = (MailService) context.getBean("mailService");
         mailService.sendEmail(mail);
     }
 }
