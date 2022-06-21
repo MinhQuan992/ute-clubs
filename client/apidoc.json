@@ -1759,6 +1759,186 @@
         }
       }
     },
+    "/events/roll-call": {
+      "post": {
+        "tags": [
+          "event-controller"
+        ],
+        "operationId": "rollCall",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRollCallParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEventResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/register-to-event": {
+      "post": {
+        "tags": [
+          "event-controller"
+        ],
+        "operationId": "registerToEvent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRegisterParam"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/comments": {
       "post": {
         "tags": [
@@ -2863,6 +3043,183 @@
         }
       }
     },
+    "/events/{eventId}/participants": {
+      "get": {
+        "tags": [
+          "event-controller"
+        ],
+        "operationId": "getParticipantsOfEvent",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserEventResponse"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/registered-events": {
+      "get": {
+        "tags": [
+          "event-controller"
+        ],
+        "operationId": "getRegisteredEventsForUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventResponse"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/comments/get-by-post/{postId}": {
       "get": {
         "tags": [
@@ -3698,6 +4055,97 @@
         "parameters": [
           {
             "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{eventId}/cancel-event-registration": {
+      "delete": {
+        "tags": [
+          "event-controller"
+        ],
+        "operationId": "cancelEventRegistration",
+        "parameters": [
+          {
+            "name": "eventId",
             "in": "path",
             "required": true,
             "schema": {
@@ -4840,6 +5288,79 @@
           }
         }
       },
+      "EventRollCallParams": {
+        "required": [
+          "eventId",
+          "joined",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "pattern": "^[0-9]*$",
+            "type": "string"
+          },
+          "userId": {
+            "pattern": "^[0-9]*$",
+            "type": "string"
+          },
+          "joined": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UserEventResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "studentId": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "faculty": {
+            "type": "string"
+          },
+          "major": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "joined": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EventRegisterParam": {
+        "required": [
+          "eventId"
+        ],
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "pattern": "^[0-9]*$",
+            "type": "string"
+          }
+        }
+      },
       "CommentCreateParams": {
         "required": [
           "content",
@@ -4951,6 +5472,9 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
           "first": {
             "type": "boolean"
           },
@@ -4961,15 +5485,12 @@
             "type": "integer",
             "format": "int32"
           },
-          "pageable": {
-            "$ref": "#/components/schemas/Pageable"
-          },
           "empty": {
             "type": "boolean"
           }
         }
       },
-      "Pageable": {
+      "PageableObject": {
         "type": "object",
         "properties": {
           "offset": {
@@ -4979,18 +5500,18 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
           "pageNumber": {
             "type": "integer",
             "format": "int32"
           },
-          "unpaged": {
-            "type": "boolean"
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           },
           "paged": {
+            "type": "boolean"
+          },
+          "unpaged": {
             "type": "boolean"
           }
         }
@@ -5037,6 +5558,9 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
           "first": {
             "type": "boolean"
           },
@@ -5046,9 +5570,6 @@
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/Pageable"
           },
           "empty": {
             "type": "boolean"
@@ -5083,6 +5604,9 @@
           "sort": {
             "$ref": "#/components/schemas/Sort"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
           "first": {
             "type": "boolean"
           },
@@ -5092,9 +5616,6 @@
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/Pageable"
           },
           "empty": {
             "type": "boolean"
