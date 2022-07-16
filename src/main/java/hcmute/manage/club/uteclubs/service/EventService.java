@@ -56,6 +56,22 @@ public class EventService {
   private static final String END_TIME_KEY = "endTime";
   private static final Integer NUMBER_OF_SECONDS_IN_TWO_DAYS = 60 * 60 * 24 * 2;
 
+  public Boolean getEditPermission(String eventId) {
+    Event event = getEventById(eventId);
+    User user = getCurrentUser();
+    Optional<UserClub> userClubOptional =
+        userClubRepository.findUserClubByUserAndClub(user, event.getClub());
+    if (userClubOptional.isEmpty()) {
+      return Boolean.FALSE;
+    }
+
+    if (userClubOptional.get().getRoleInClub().equals("ROLE_MEMBER")) {
+      return Boolean.FALSE;
+    }
+
+    return Boolean.TRUE;
+  }
+
   public EventResponse createEvent(EventCreateParams params) {
     Map<String, LocalDateTime> timeMap = getTime(params.getStartTime(), params.getEndTime());
     Club club =
@@ -309,6 +325,21 @@ public class EventService {
       throw new NoContentException();
     }
     return userEventMapper.listUserEventToListUserEventDTO(participants);
+  }
+
+  public List<UserEventResponse> searchParticipants(String eventId, String query) {
+    if (StringUtils.isBlank(query)) {
+      throw new InvalidRequestException("The query is required");
+    }
+    List<UserEventResponse> participants = getParticipantsOfEvent(eventId);
+    List<UserEventResponse> filteredParticipants = participants.stream()
+        .filter(participant -> participant.getFullName().contains(query) ||
+            participant.getStudentId().contains(query))
+        .toList();
+    if (filteredParticipants.isEmpty()) {
+      throw new NoContentException();
+    }
+    return filteredParticipants;
   }
 
   public UserEventResponse rollCall(EventRollCallParams params) {
