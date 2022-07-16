@@ -311,6 +311,21 @@ public class EventService {
     return userEventMapper.listUserEventToListUserEventDTO(participants);
   }
 
+  public List<UserEventResponse> searchParticipants(String eventId, String query) {
+    if (StringUtils.isBlank(query)) {
+      throw new InvalidRequestException("The query is required");
+    }
+    List<UserEventResponse> participants = getParticipantsOfEvent(eventId);
+    List<UserEventResponse> filteredParticipants = participants.stream()
+        .filter(participant -> participant.getFullName().contains(query) ||
+            participant.getStudentId().contains(query))
+        .toList();
+    if (filteredParticipants.isEmpty()) {
+      throw new NoContentException();
+    }
+    return filteredParticipants;
+  }
+
   public UserEventResponse rollCall(EventRollCallParams params) {
     Event event = getEventById(params.getEventId());
     validateLeaderModPermissions(event.getClub());

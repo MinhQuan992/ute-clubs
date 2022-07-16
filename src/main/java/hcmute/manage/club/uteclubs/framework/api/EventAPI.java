@@ -84,6 +84,15 @@ public interface EventAPI {
               message = "The event ID must contain numeric characters only")
           String eventId);
 
+  @GetMapping("/{eventId}/participants/find")
+  ResponseEntity<List<UserEventResponse>> getParticipantsOfEvent(
+      @PathVariable("eventId")
+      @Pattern(
+          regexp = RegexConstant.COMMON_ID_PATTERN,
+          message = "The event ID must contain numeric characters only")
+          String eventId,
+      @RequestParam String query);
+
   @PostMapping("/roll-call")
   ResponseEntity<UserEventResponse> rollCall(@Valid @RequestBody EventRollCallParams params);
 }

@@ -75,6 +75,11 @@ public class EventController implements EventAPI {
   }
 
   @Override
+  public ResponseEntity<List<UserEventResponse>> getParticipantsOfEvent(String eventId, String query) {
+    return ResponseEntity.ok(eventService.searchParticipants(eventId, query));
+  }
+
+  @Override
   public ResponseEntity<UserEventResponse> rollCall(EventRollCallParams params) {
     return ResponseEntity.ok(eventService.rollCall(params));
   }
