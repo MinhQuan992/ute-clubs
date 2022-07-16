@@ -14,6 +14,7 @@ import hcmute.manage.club.uteclubs.repository.UserClubRepository;
 import hcmute.manage.club.uteclubs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -187,6 +188,19 @@ public class ClubService {
     public List<UserResponse> getMembersByRole(String clubId, String role) {
         Club club = getClubById(clubId);
         List<User> result = userClubRepository.getMembersUsingRole(club, role);
+        if (result.isEmpty()) {
+            throw new NoContentException();
+        }
+        return UserMapper.INSTANCE.listUserToListUserDTO(result);
+    }
+
+    public List<UserResponse> findMembers(String clubId, String query) {
+        if (StringUtils.isBlank(query)) {
+            throw new InvalidRequestException("The query is required");
+        }
+        Club club = getClubById(clubId);
+        String convertedQuery = "%" + query + "%";
+        List<User> result = userClubRepository.getMembersUsingSearchedQuery(club, convertedQuery);
         if (result.isEmpty()) {
             throw new NoContentException();
         }

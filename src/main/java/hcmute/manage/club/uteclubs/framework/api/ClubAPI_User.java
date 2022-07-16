@@ -39,6 +39,15 @@ public interface ClubAPI_User {
             @RequestParam String role
     );
 
+    @GetMapping("/{clubId}/members/find")
+    ResponseEntity<List<UserResponse>> findMembers(
+            @PathVariable("clubId")
+            @NotBlank(message = "The club ID is required")
+            @Pattern(regexp = COMMON_ID_PATTERN, message = "The club ID must contain numeric characters only")
+                String clubId,
+            @RequestParam String query
+    );
+
     @GetMapping("/{clubId}/get-role")
     ResponseEntity<String> getRoleInClubOfCurrentUser(
             @PathVariable("clubId")
